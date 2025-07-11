@@ -6,6 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		AF6E88772E1CA11500C89453 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF6E88762E1CA11400C89453 /* WidgetKit.framework */; };
+		AF6E88792E1CA11500C89453 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF6E88782E1CA11500C89453 /* SwiftUI.framework */; };
+		AF6E88862E1CA11800C89453 /* ActivityTrackerWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AF6E88742E1CA11400C89453 /* ActivityTrackerWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		AF6E88DD2E1CF69D00C89453 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF6E88DC2E1CF69D00C89453 /* CoreData.framework */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		AF6E88542E1CA06B00C89453 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -21,17 +28,62 @@
 			remoteGlobalIDString = AF6E88402E1CA06800C89453;
 			remoteInfo = ActivityTracker;
 		};
+		AF6E88842E1CA11800C89453 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AF6E88392E1CA06800C89453 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AF6E88732E1CA11400C89453;
+			remoteInfo = ActivityTrackerWidgetExtension;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		AF6E888B2E1CA11800C89453 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				AF6E88862E1CA11800C89453 /* ActivityTrackerWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		AF6E88412E1CA06800C89453 /* ActivityTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ActivityTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF6E88532E1CA06B00C89453 /* ActivityTrackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ActivityTrackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF6E885D2E1CA06B00C89453 /* ActivityTrackerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ActivityTrackerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AF6E88742E1CA11400C89453 /* ActivityTrackerWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ActivityTrackerWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		AF6E88762E1CA11400C89453 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		AF6E88782E1CA11500C89453 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		AF6E88DC2E1CF69D00C89453 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		AF6E88872E1CA11800C89453 /* Exceptions for "ActivityTrackerWidget" folder in "ActivityTrackerWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = AF6E88732E1CA11400C89453 /* ActivityTrackerWidgetExtension */;
+		};
+		AF6E88DB2E1CF34F00C89453 /* Exceptions for "ActivityTracker" folder in "ActivityTrackerWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				ActivityTracker.xcdatamodeld,
+			);
+			target = AF6E88732E1CA11400C89453 /* ActivityTrackerWidgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		AF6E88432E1CA06800C89453 /* ActivityTracker */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AF6E88DB2E1CF34F00C89453 /* Exceptions for "ActivityTracker" folder in "ActivityTrackerWidgetExtension" target */,
+			);
 			path = ActivityTracker;
 			sourceTree = "<group>";
 		};
@@ -43,6 +95,14 @@
 		AF6E88602E1CA06B00C89453 /* ActivityTrackerUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = ActivityTrackerUITests;
+			sourceTree = "<group>";
+		};
+		AF6E887A2E1CA11500C89453 /* ActivityTrackerWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AF6E88872E1CA11800C89453 /* Exceptions for "ActivityTrackerWidget" folder in "ActivityTrackerWidgetExtension" target */,
+			);
+			path = ActivityTrackerWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -69,6 +129,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AF6E88712E1CA11400C89453 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AF6E88DD2E1CF69D00C89453 /* CoreData.framework in Frameworks */,
+				AF6E88792E1CA11500C89453 /* SwiftUI.framework in Frameworks */,
+				AF6E88772E1CA11500C89453 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -78,6 +148,8 @@
 				AF6E88432E1CA06800C89453 /* ActivityTracker */,
 				AF6E88562E1CA06B00C89453 /* ActivityTrackerTests */,
 				AF6E88602E1CA06B00C89453 /* ActivityTrackerUITests */,
+				AF6E887A2E1CA11500C89453 /* ActivityTrackerWidget */,
+				AF6E88752E1CA11400C89453 /* Frameworks */,
 				AF6E88422E1CA06800C89453 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -88,8 +160,19 @@
 				AF6E88412E1CA06800C89453 /* ActivityTracker.app */,
 				AF6E88532E1CA06B00C89453 /* ActivityTrackerTests.xctest */,
 				AF6E885D2E1CA06B00C89453 /* ActivityTrackerUITests.xctest */,
+				AF6E88742E1CA11400C89453 /* ActivityTrackerWidgetExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		AF6E88752E1CA11400C89453 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AF6E88DC2E1CF69D00C89453 /* CoreData.framework */,
+				AF6E88762E1CA11400C89453 /* WidgetKit.framework */,
+				AF6E88782E1CA11500C89453 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -102,10 +185,12 @@
 				AF6E883D2E1CA06800C89453 /* Sources */,
 				AF6E883E2E1CA06800C89453 /* Frameworks */,
 				AF6E883F2E1CA06800C89453 /* Resources */,
+				AF6E888B2E1CA11800C89453 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				AF6E88852E1CA11800C89453 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				AF6E88432E1CA06800C89453 /* ActivityTracker */,
@@ -163,6 +248,28 @@
 			productReference = AF6E885D2E1CA06B00C89453 /* ActivityTrackerUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		AF6E88732E1CA11400C89453 /* ActivityTrackerWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AF6E88882E1CA11800C89453 /* Build configuration list for PBXNativeTarget "ActivityTrackerWidgetExtension" */;
+			buildPhases = (
+				AF6E88702E1CA11400C89453 /* Sources */,
+				AF6E88712E1CA11400C89453 /* Frameworks */,
+				AF6E88722E1CA11400C89453 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				AF6E887A2E1CA11500C89453 /* ActivityTrackerWidget */,
+			);
+			name = ActivityTrackerWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = ActivityTrackerWidgetExtension;
+			productReference = AF6E88742E1CA11400C89453 /* ActivityTrackerWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -184,6 +291,9 @@
 						CreatedOnToolsVersion = 16.4;
 						TestTargetID = AF6E88402E1CA06800C89453;
 					};
+					AF6E88732E1CA11400C89453 = {
+						CreatedOnToolsVersion = 16.4;
+					};
 				};
 			};
 			buildConfigurationList = AF6E883C2E1CA06800C89453 /* Build configuration list for PBXProject "ActivityTracker" */;
@@ -203,6 +313,7 @@
 				AF6E88402E1CA06800C89453 /* ActivityTracker */,
 				AF6E88522E1CA06B00C89453 /* ActivityTrackerTests */,
 				AF6E885C2E1CA06B00C89453 /* ActivityTrackerUITests */,
+				AF6E88732E1CA11400C89453 /* ActivityTrackerWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -223,6 +334,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		AF6E885B2E1CA06B00C89453 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AF6E88722E1CA11400C89453 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -253,6 +371,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AF6E88702E1CA11400C89453 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -265,6 +390,11 @@
 			isa = PBXTargetDependency;
 			target = AF6E88402E1CA06800C89453 /* ActivityTracker */;
 			targetProxy = AF6E885E2E1CA06B00C89453 /* PBXContainerItemProxy */;
+		};
+		AF6E88852E1CA11800C89453 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AF6E88732E1CA11400C89453 /* ActivityTrackerWidgetExtension */;
+			targetProxy = AF6E88842E1CA11800C89453 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -393,15 +523,20 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ActivityTracker/ActivityTracker.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7CF9S9KF6C;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Okie;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -420,15 +555,20 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ActivityTracker/ActivityTracker.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7CF9S9KF6C;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Okie;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -510,6 +650,62 @@
 			};
 			name = Release;
 		};
+		AF6E88892E1CA11800C89453 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = ActivityTrackerWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7CF9S9KF6C;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ActivityTrackerWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OkieWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = PL.ActivityTracker.ActivityTrackerWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AF6E888A2E1CA11800C89453 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = ActivityTrackerWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7CF9S9KF6C;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ActivityTrackerWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OkieWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = PL.ActivityTracker.ActivityTrackerWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -545,6 +741,15 @@
 			buildConfigurations = (
 				AF6E886E2E1CA06B00C89453 /* Debug */,
 				AF6E886F2E1CA06B00C89453 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AF6E88882E1CA11800C89453 /* Build configuration list for PBXNativeTarget "ActivityTrackerWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AF6E88892E1CA11800C89453 /* Debug */,
+				AF6E888A2E1CA11800C89453 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
