@@ -14,7 +14,3 @@ struct ActivityTrackerWidgetBundle: WidgetBundle {
         ActivityTrackerWidget()
     }
 }
-
-#Preview {
-    ActivityTrackerWidgetBundle()
-}

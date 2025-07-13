@@ -190,18 +190,14 @@ struct ActivityTrackerWidget: Widget {
     }
 }
 
-#Preview("Widget Entry") {
-    let mockActivities = [
-        ActivityModel(id: UUID(), name: "Meditation", iconName: "leaf.fill", daysSinceCompletion: 2, isCompletedToday: false),
-        ActivityModel(id: UUID(), name: "Exercise", iconName: "figure.run", daysSinceCompletion: 0, isCompletedToday: true),
-        ActivityModel(id: UUID(), name: "Reading", iconName: "book.fill", daysSinceCompletion: 5, isCompletedToday: false)
-    ]
-    
-    return ActivityTrackerWidgetEntryView(entry: ActivityEntry(date: Date(), activities: mockActivities))
-        .previewContext(WidgetPreviewContext(family: .systemMedium))
-}
-
-#Preview {
-    ActivityTrackerWidget()
-        .previewContext(WidgetPreviewContext(family: .systemMedium))
+struct ActivityTrackerWidget_Previews: PreviewProvider {
+    static var previews: some View {
+        let mockActivities = [
+            ActivityModel(id: UUID(), name: "Meditation", iconName: "leaf.fill", daysSinceCompletion: 2, isCompletedToday: false),
+            ActivityModel(id: UUID(), name: "Exercise", iconName: "figure.run", daysSinceCompletion: 0, isCompletedToday: true),
+            ActivityModel(id: UUID(), name: "Reading", iconName: "book.fill", daysSinceCompletion: 5, isCompletedToday: false)
+        ]
+        ActivityTrackerWidgetEntryView(entry: ActivityEntry(date: Date(), activities: mockActivities))
+            .previewContext(WidgetPreviewContext(family: .systemMedium))
+    }
 }

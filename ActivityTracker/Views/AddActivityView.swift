@@ -47,4 +47,5 @@ struct AddActivityView: View {
 
 #Preview {
     AddActivityView(onSave: {})
+        .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
 } 
