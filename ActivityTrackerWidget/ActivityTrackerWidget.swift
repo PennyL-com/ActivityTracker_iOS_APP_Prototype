@@ -201,3 +201,5 @@ struct ActivityTrackerWidget_Previews: PreviewProvider {
             .previewContext(WidgetPreviewContext(family: .systemMedium))
     }
 }
+
+

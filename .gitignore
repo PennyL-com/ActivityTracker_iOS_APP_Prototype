@@ -1,0 +1,70 @@
+# === macOS ===
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# === Xcode ===
+build/
+DerivedData/
+*.xcworkspace
+*.xccheckout
+*.xcscmblueprint
+
+# === User-specific Xcode files ===
+*.xcuserstate
+*.xcuserdatad/
+*.moved-aside
+*.swp
+
+# === Swift Package Manager ===
+.swiftpm/
+.build/
+Package.resolved
+
+# === CocoaPods (if used) ===
+Pods/
+Podfile.lock
+
+# === Carthage (if used) ===
+Carthage/
+Carthage.build/
+
+# === Fastlane (optional, if used) ===
+fastlane/report.xml
+fastlane/screenshots
+fastlane/test_output
+fastlane/.env
+
+# === Archive ===
+*.xcarchive
+
+# === Playgrounds ===
+timeline.xctimeline
+playground.xcworkspace
+
+# === Logs and crash reports ===
+*.log
+*.crash
+
+# === Temporary files ===
+*.tmp
+*.temp
+*.orig
+
+# === Preview device data ===
+PreviewContent/
+
+# === Personal schemes and breakpoints ===
+*.xcscheme
+*.xcdebugger/
+*.xcuserstate
+
+# === SwiftLint Cache (if used) ===
+.swiftlint.yml
+.swiftlint.tmp
+
+# === Environment config (if any) ===
+.env
+
+# === Firebase config (if used and not public) ===
+GoogleService-Info.plist
