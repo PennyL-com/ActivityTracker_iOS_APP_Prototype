@@ -9,6 +9,7 @@ struct AddActivityView: View {
     @State private var iconName = "star"
     let categories = ["Hobby", "Health", "Pet", "Home", "Others", "Education"].sorted()
     var onSave: () -> Void
+    //TODO：这个view少一个可选icon功能
 
     var body: some View {
         NavigationView {

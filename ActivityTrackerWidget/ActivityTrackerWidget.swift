@@ -79,7 +79,15 @@ struct WidgetDataProvider {
                 let lastCompletion = completions.sorted { ($0.completedDate ?? .distantPast) > ($1.completedDate ?? .distantPast) }.first
                 let lastDate = lastCompletion?.completedDate ?? .distantPast
                 let days = Calendar.current.dateComponents([.day], from: lastDate, to: Date()).day ?? -1
-                let isToday = Calendar.current.isDateInToday(lastDate)
+                
+                // 修复 isCompletedToday 的逻辑
+                let isToday = completions.contains { completion in
+                    if let date = completion.completedDate {
+                        return Calendar.current.isDateInToday(date)
+                    }
+                    return false
+                }
+                
                 print("[Widget] Activity: \(activity.name ?? ""), lastDate: \(lastDate), days: \(days), isToday: \(isToday)")
                 return ActivityModel(
                     id: activity.id ?? UUID(),
