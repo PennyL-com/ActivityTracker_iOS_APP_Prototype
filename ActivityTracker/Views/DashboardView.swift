@@ -91,4 +91,9 @@ struct DashboardView: View {
         guard let last = completions.first?.completedDate else { return -1 }
         return Calendar.current.dateComponents([.day], from: last, to: Date()).day ?? -1
     }
+}
+
+#Preview {
+    DashboardView()
+        .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
 } 

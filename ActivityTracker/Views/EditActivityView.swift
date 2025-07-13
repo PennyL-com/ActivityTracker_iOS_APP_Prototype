@@ -50,4 +50,17 @@ struct EditActivityView: View {
             }
         }
     }
+}
+
+#Preview {
+    let context = PersistenceController.preview.container.viewContext
+    let mockActivity = Activity(context: context)
+    mockActivity.id = UUID()
+    mockActivity.name = "Sample Activity"
+    mockActivity.category = "Hobby"
+    mockActivity.optionalDetails = "Sample details"
+    mockActivity.createdDate = Date()
+    
+    return EditActivityView(activity: mockActivity, onSave: {})
+        .environment(\.managedObjectContext, context)
 } 

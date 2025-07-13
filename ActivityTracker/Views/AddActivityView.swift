@@ -43,4 +43,8 @@ struct AddActivityView: View {
             }
         }
     }
+}
+
+#Preview {
+    AddActivityView(onSave: {})
 } 

@@ -7,4 +7,9 @@ struct ActivityTrackerApp: App {
             DashboardView()
         }
     }
+}
+
+#Preview {
+    ActivityTrackerApp()
+        .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
 } 

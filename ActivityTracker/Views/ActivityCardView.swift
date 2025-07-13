@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ActivityCardView: View {
     let activity: Activity
-    let isCompletedToday: Bool
+    let isCompletedToday: Bool // TODO
     let onComplete: () -> Void
     let onEdit: () -> Void
     let onDelete: () -> Void
@@ -69,4 +69,35 @@ struct ActivityCardView: View {
         guard let last = completions?.first?.completedDate else { return -1 }
         return Calendar.current.dateComponents([.day], from: last, to: Date()).day ?? -1
     }
-} 
+
+}
+
+
+#Preview {
+    let context = PersistenceController.preview.container.viewContext
+    let mockActivity = Activity(context: context)
+    mockActivity.id = UUID()
+    mockActivity.name = "Meditation"
+    mockActivity.iconName = "leaf.fill"
+    mockActivity.category = "Health"
+    mockActivity.createdDate = Date()
+    
+    // 添加模拟的完成记录
+    let mockCompletion = Completion(context: context)
+    mockCompletion.id = UUID()
+    mockCompletion.completedDate = Calendar.current.date(byAdding: .day, value: -3, to: Date())
+    mockCompletion.source = "app"
+    mockCompletion.activity = mockActivity
+    
+    return ActivityCardView(
+        activity: mockActivity,
+        isCompletedToday: false,
+        onComplete: { print("✅") },
+        onEdit: { print("✏️") },
+        onDelete: { print("🗑️") },
+        onTapCard: { print("👆") }
+    )
+    .environment(\.managedObjectContext, context)
+    .padding()
+}
+

@@ -67,4 +67,32 @@ struct ActivityDetailView: View {
         guard let last = completions.first?.completedDate else { return -1 }
         return Calendar.current.dateComponents([.day], from: last, to: Date()).day ?? -1
     }
+
+}
+
+#Preview {
+    let context = PersistenceController.preview.container.viewContext
+    let mockActivity = Activity(context: context)
+    mockActivity.id = UUID()
+    mockActivity.name = "Sample Activity"
+    mockActivity.category = "Health"
+    mockActivity.optionalDetails = "This is a sample activity for preview"
+    mockActivity.createdDate = Date()
+    
+    // 添加一些模拟的完成记录
+    let completion1 = Completion(context: context)
+    completion1.id = UUID()
+    completion1.completedDate = Date()
+    completion1.source = "app"
+    completion1.activity = mockActivity
+    
+    let completion2 = Completion(context: context)
+    completion2.id = UUID()
+    completion2.completedDate = Calendar.current.date(byAdding: .day, value: -2, to: Date())
+    completion2.source = "widget"
+    completion2.activity = mockActivity
+    
+    return ActivityDetailView(activity: mockActivity)
+        .environment(\.managedObjectContext, context)
+    
 } 
