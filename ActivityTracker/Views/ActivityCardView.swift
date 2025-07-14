@@ -8,13 +8,8 @@ struct ActivityCardView: View {
     let onEdit: () -> Void // 编辑活动的回调函数
     let onDelete: () -> Void // 删除活动的回调函数
     let onTapCard: () -> Void // 点击卡片的回调函数
-<<<<<<< HEAD
-    //TODO：应该添加一个点击打钩按钮事件
-  
-=======
     let onTapCheck: () -> Void // TODO：应该添加一个点击打钩按钮事件
 
->>>>>>> 77d3be2 (- UI: Add toggle button for isCompleted in AddActivityView)
     var body: some View {
         HStack(alignment: .center, spacing: 16) { // 水平布局，包含活动图标、信息和操作按钮
             ZStack { // 活动图标区域圆形和icon重叠
