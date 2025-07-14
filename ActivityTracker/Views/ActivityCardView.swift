@@ -3,16 +3,21 @@ import SwiftUI
 struct ActivityCardView: View {
 
     let activity: Activity // 要显示的活动对象
-    let isCompletedToday: Bool // 标记今天是否已完成该活动 Altered
+    @State var isCompletedToday: Bool // 标记今天是否已完成该活动 Altered
     let onComplete: () -> Void // 完成活动的回调函数 这4个方法是在dashboardview中定义的
     let onEdit: () -> Void // 编辑活动的回调函数
     let onDelete: () -> Void // 删除活动的回调函数
     let onTapCard: () -> Void // 点击卡片的回调函数
+<<<<<<< HEAD
     //TODO：应该添加一个点击打钩按钮事件
   
+=======
+    let onTapCheck: () -> Void // TODO：应该添加一个点击打钩按钮事件
+
+>>>>>>> 77d3be2 (- UI: Add toggle button for isCompleted in AddActivityView)
     var body: some View {
         HStack(alignment: .center, spacing: 16) { // 水平布局，包含活动图标、信息和操作按钮
-            ZStack { // 活动图标区域 TODO：为啥要用Zstack？
+            ZStack { // 活动图标区域圆形和icon重叠
                 Circle() // icon灰色的圆形背景
                     .fill(Color(.systemGray5)) // 使用系统灰色作为背景
                     .frame(width: 48, height: 48)
@@ -28,8 +33,8 @@ struct ActivityCardView: View {
             }
             Spacer() // 弹性空间，将按钮推到右侧
             Button(action: { // 完成按钮
-                if !isCompletedToday { // 默认是false TODO：这个逻辑应该是点击后把这个bool变成true，然后改变样式；如果已经是true就没动作
-                    onComplete()//TODO：原本是false变成true之后才调用onComplete
+                if !isCompletedToday { // TODO：点击后把这个bool变成true，然后改变样式；如果已经是true就没动作
+                    isCompletedToday = true
                 }
             }) {
                 ZStack { // 按钮内容
@@ -96,10 +101,11 @@ struct ActivityCardView: View {
     return ActivityCardView( // 返回预览视图
         activity: mockActivity, // 传入模拟活动
         isCompletedToday: false, // 设置为今天未完成
-        onComplete: { print("✅") }, // 完成回调
+        onComplete: { print("not completed") }, // 完成回调
         onEdit: { print("✏️") }, // 编辑回调
         onDelete: { print("🗑️") }, // 删除回调
-        onTapCard: { print("👆") } // 点击卡片回调
+        onTapCard: { print("👆") },
+        onTapCheck:{ print("not checked")}// 点击卡片回调
     )
     .environment(\.managedObjectContext, context) // 注入 Core Data 上下文
     .padding() // 添加内边距

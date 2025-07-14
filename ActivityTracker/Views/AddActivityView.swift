@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreData
 
 struct AddActivityView: View {
     @Environment(\.presentationMode) var presentationMode
@@ -7,9 +8,12 @@ struct AddActivityView: View {
     @State private var optionalDetails = ""
     @State private var priorityRank: Int16 = 0
     @State private var iconName = "star"
+    @State private var isCompleted = false // 添加completed状态
     let categories = ["Hobby", "Health", "Pet", "Home", "Others", "Education"].sorted()
+
     var onSave: () -> Void
     //TODO：这个view少一个可选icon功能
+    
 
     var body: some View {
         NavigationView {
@@ -21,6 +25,14 @@ struct AddActivityView: View {
                             Text(cat)
                         }
                     }
+                    
+                    // Completed状态选择器
+                    HStack {
+                        Text("Completed Today")
+                        Spacer()
+                        Toggle("", isOn: $isCompleted)
+                    }
+                    
                     TextField("Details", text: $optionalDetails)
                 }
             }
@@ -31,11 +43,20 @@ struct AddActivityView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
-                        _ = ActivityDataManager.shared.createActivity(
+                        let activity = ActivityDataManager.shared.createActivity(
                             name: name,
                             category: category,
-                            optionalDetails: optionalDetails.isEmpty ? nil : optionalDetails
+                            iconName: iconName,
+                            optionalDetails: optionalDetails.isEmpty ? nil : optionalDetails,
+                            createdDate: Date(),
+                            isCompleted: isCompleted
                         )
+                        
+                        // 如果用户选择了completed，立即添加完成记录
+                        if isCompleted {
+                            _ = ActivityDataManager.shared.addCompletion(to: activity, source: "app")//TODO：source 需要传入补全逻辑
+                        }
+                        
                         onSave()
                         presentationMode.wrappedValue.dismiss()
                     }

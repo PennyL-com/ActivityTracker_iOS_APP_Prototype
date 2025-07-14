@@ -22,13 +22,15 @@ class ActivityDataManager {
     ///   - iconName: 图标名称，可选
     ///   - optionalDetails: 可选的详细描述
     ///   - createdDate: 创建日期，默认为当前时间
+    ///   - isCompleted: 是否已完成，默认为false
     /// - Returns: 新创建的活动对象
     func createActivity(
         name: String,
         category: String,
         iconName: String? = nil,
         optionalDetails: String? = nil,
-        createdDate: Date = Date()
+        createdDate: Date = Date(),
+        isCompleted: Bool
     ) -> Activity {
         // 在 Core Data 上下文中创建新的 Activity 实体
         let activity = Activity(context: context)
@@ -38,6 +40,7 @@ class ActivityDataManager {
         activity.iconName = iconName
         activity.optionalDetails = optionalDetails
         activity.createdDate = createdDate
+        activity.isCompleted = isCompleted
         save() // 保存到 Core Data
         return activity
     }
