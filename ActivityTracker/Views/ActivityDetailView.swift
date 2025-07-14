@@ -11,22 +11,60 @@ struct ActivityDetailView: View {
 
     var body: some View {
         List {
-            Section(header: Text("Completion History")) {
-                ForEach(completions, id: \.id) { completion in
-                    HStack {
-                        Image(systemName: "checkmark.seal")
-                            .foregroundColor(.green)
-                        VStack(alignment: .leading) {
-                            Text(completion.completedDate ?? Date(), style: .date)
-                            Text(completion.source ?? "")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+            Section(header: Text("Records")) {
+                HStack {
+                    Text("Last Done")
+                    Spacer()
+                    Text("\(daysSinceLastCompletion()) days ago")
+                        .foregroundColor(.blue)
+                }
+                if completions.isEmpty {
+                    Text("No completion history yet.")
+                        .foregroundColor(.secondary)
+                } else {
+                    let uniqueCompletions = Dictionary(grouping: completions) { completion in
+                        completion.completedDate.map { Calendar.current.startOfDay(for: $0) } ?? Date.distantPast
+                    }.compactMap { $0.value.first }.sorted { ($0.completedDate ?? .distantPast) > ($1.completedDate ?? .distantPast) }
+                    ForEach(uniqueCompletions, id: \.id) { completion in
+                        HStack {
+                            Image(systemName: "checkmark.seal")
+                                .foregroundColor(.green)
+                            VStack(alignment: .leading) {
+                                Text(completion.completedDate ?? Date(), style: .date)
+                                if let source = completion.source {
+                                    Text(source)
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
                         }
+                    }
+                }
+            }
+            Section(header: Text("Activity Info")) {
+                HStack {
+                    Text("Category")
+                    Spacer()
+                    Text(activity.category ?? "-")
+                        .foregroundColor(.blue)
+                }
+                if let notes = activity.optionalDetails, !notes.isEmpty {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Notes")
+                        Text(notes)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
                     }
                 }
             }
         }
         .navigationTitle(activity.name ?? "")
         .onAppear(perform: reload)
+    }
+
+    func daysSinceLastCompletion() -> Int {
+        let completions = manager.fetchCompletions(for: activity)
+        guard let last = completions.first?.completedDate else { return -1 }
+        return Calendar.current.dateComponents([.day], from: last, to: Date()).day ?? -1
     }
 } 

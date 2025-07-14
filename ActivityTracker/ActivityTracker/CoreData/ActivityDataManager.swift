@@ -15,9 +15,7 @@ class ActivityDataManager {
         name: String,
         category: String,
         optionalDetails: String? = nil,
-        createdDate: Date = Date(),
-        priorityRank: Int16 = 0,
-        iconName: String? = nil
+        createdDate: Date = Date()
     ) -> Activity {
         let activity = Activity(context: context)
         activity.id = UUID()
@@ -25,8 +23,6 @@ class ActivityDataManager {
         activity.category = category
         activity.optionalDetails = optionalDetails
         activity.createdDate = createdDate
-        activity.priorityRank = priorityRank
-        activity.iconName = iconName
         save()
         return activity
     }

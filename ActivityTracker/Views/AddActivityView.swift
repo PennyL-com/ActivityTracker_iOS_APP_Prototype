@@ -7,7 +7,7 @@ struct AddActivityView: View {
     @State private var optionalDetails = ""
     @State private var priorityRank: Int16 = 0
     @State private var iconName = "star"
-    let categories = ["Hobby", "Health", "Career", "Education", "Custom"]
+    let categories = ["Hobby", "Health", "Pet", "Home", "Others", "Education"].sorted()
     var onSave: () -> Void
 
     var body: some View {
@@ -22,11 +22,6 @@ struct AddActivityView: View {
                     }
                     TextField("Details", text: $optionalDetails)
                 }
-                Section(header: Text("Priority & Icon")) {
-                    Stepper("Priority: \(priorityRank)", value: $priorityRank, in: 0...5)
-                    TextField("SF Symbol", text: $iconName)
-                        .autocapitalization(.none)
-                }
             }
             .navigationTitle("Add Activity")
             .toolbar {
@@ -38,9 +33,7 @@ struct AddActivityView: View {
                         _ = ActivityDataManager.shared.createActivity(
                             name: name,
                             category: category,
-                            optionalDetails: optionalDetails.isEmpty ? nil : optionalDetails,
-                            priorityRank: priorityRank,
-                            iconName: iconName.isEmpty ? nil : iconName
+                            optionalDetails: optionalDetails.isEmpty ? nil : optionalDetails
                         )
                         onSave()
                         presentationMode.wrappedValue.dismiss()

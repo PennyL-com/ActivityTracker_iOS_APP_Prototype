@@ -68,7 +68,7 @@ struct WidgetDataProvider {
         let context = container.viewContext
 
         let request: NSFetchRequest<Activity> = Activity.fetchRequest()
-        request.sortDescriptors = [NSSortDescriptor(key: "priorityRank", ascending: false)]
+        request.sortDescriptors = [NSSortDescriptor(key: "createdDate", ascending: false)]
         request.fetchLimit = limit
 
         do {

@@ -15,7 +15,6 @@ struct PersistenceController {
             activity.name = "Preview Activity"
             activity.category = "Preview"
             activity.createdDate = Date()
-            activity.priorityRank = 0
         }
         do {
             try viewContext.save()
