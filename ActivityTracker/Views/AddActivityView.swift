@@ -9,10 +9,26 @@ struct AddActivityView: View {
     @State private var priorityRank: Int16 = 0
     @State private var iconName = "star"
     @State private var isCompleted = false // 添加completed状态
+    @State private var emojiList: [EmojiItem] = []
+    @State private var selectedEmoji: String = ""
+    @State private var showEmojiPicker = false
+    @State private var emojiCategories: [String] = []
+    @State private var selectedCategory: String = ""
+    @State private var emojiDict: [String: [EmojiItem]] = [:]
+    // 新增：分类到代表emoji的映射
+    let categoryIcons: [String: String] = [
+        "Smileys & Emotion": "😀",
+        "People & Body": "🧑",
+        "Animals & Nature": "🐶",
+        "Food & Drink": "🍎",
+        "Travel & Places": "🚗",
+        "Activities": "⚽️",
+        "Objects": "💡",
+        "Symbols": "❤️",
+        "Flags": "🏳️"
+    ]
     let categories = ["Hobby", "Health", "Pet", "Home", "Others", "Education"].sorted()
-
     var onSave: () -> Void
-    //TODO：这个view少一个可选icon功能
     
 
     var body: some View {
@@ -20,17 +36,60 @@ struct AddActivityView: View {
             Form {
                 Section(header: Text("Basic Info")) {
                     TextField("Name", text: $name)
+
                     Picker("Category", selection: $category) {
                         ForEach(categories, id: \.self) { cat in
                             Text(cat)
                         }
                     }
-                    
                     // Completed状态选择器
                     HStack {
                         Text("Completed Today")
                         Spacer()
-                        Toggle("", isOn: $isCompleted)// 这里会同步isCompleted状态
+                        Toggle("", isOn: $isCompleted)
+                    }
+
+                    HStack {
+                        Text("Select Icon")
+                        Spacer()
+                        Button(action: {
+                            showEmojiPicker = true
+                        }) {
+                            Text(selectedEmoji.isEmpty ? "" : selectedEmoji)
+                                .font(.largeTitle)
+                                .frame(width: 44, height: 44)
+                                .background(Color(.systemGray5))
+                                .cornerRadius(8)
+                        }
+                    }
+                    .sheet(isPresented: $showEmojiPicker) {
+                        VStack {
+                            Picker("分类", selection: $selectedCategory) {
+                                ForEach(emojiCategories, id: \.self) { cat in
+                                    Text(categoryIcons[cat] ?? "❓")
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                            .padding()
+
+                            ScrollView {
+                                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 16) {
+                                    ForEach(emojiDict[selectedCategory] ?? [], id: \.emoji) { item in
+                                        Text(item.emoji)
+                                            .font(.largeTitle)
+                                            .frame(width: 44, height: 44)
+                                            .background(selectedEmoji == item.emoji ? Color.accentColor.opacity(0.3) : Color.clear)
+                                            .cornerRadius(8)
+                                            .onTapGesture {
+                                                selectedEmoji = item.emoji
+                                                showEmojiPicker = false
+                                            }
+                                    }
+                                }
+                                .padding()
+                            }
+                        }
+                        .padding(.top)
                     }
                     
                     TextField("Details", text: $optionalDetails)
@@ -48,7 +107,7 @@ struct AddActivityView: View {
                         let activity = ActivityDataManager.shared.createActivity(
                             name: name,
                             category: category,
-                            iconName: iconName,
+                            iconName: selectedEmoji,
                             optionalDetails: optionalDetails.isEmpty ? nil : optionalDetails,
                             createdDate: Date(),
                             isCompleted: isCompleted //所以这里创建activity的时候是会传入isCompleted的
@@ -68,6 +127,16 @@ struct AddActivityView: View {
                         presentationMode.wrappedValue.dismiss()
                     }
                     .disabled(name.isEmpty)
+                }
+            }
+            .onAppear {
+                let allEmojis = EmojiLoader.loadEmojis()
+                let grouped = Dictionary(grouping: allEmojis, by: { $0.category })
+                emojiDict = grouped
+                emojiCategories = grouped.keys.sorted()
+                selectedCategory = emojiCategories.first ?? ""
+                if let first = grouped[selectedCategory]?.first {
+                    selectedEmoji = first.emoji
                 }
             }
         }

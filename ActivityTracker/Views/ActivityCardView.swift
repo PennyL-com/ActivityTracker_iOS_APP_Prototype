@@ -19,8 +19,13 @@ struct ActivityCardView: View {
                 Circle() // icon灰色的圆形背景
                     .fill(Color(.systemGray5)) // 使用系统灰色作为背景
                     .frame(width: 48, height: 48)
-                Image(systemName: activity.iconName ?? "circle") // 活动图标，如果没有图标则使用默认圆形
-                    .font(.system(size: 28))
+                if let icon = activity.iconName, icon.isSingleEmoji {
+                    Text(icon)
+                        .font(.system(size: 28))
+                } else {
+                    Image(systemName: activity.iconName ?? "circle") // 活动图标，如果没有图标则使用默认圆形
+                        .font(.system(size: 28))
+                }
             }
             VStack(alignment: .leading, spacing: 4) { // 活动信息区域
                 Text(activity.name ?? "") // 活动名称
@@ -108,9 +113,15 @@ struct ActivityCardView: View {
         onEdit: { print("✏️") }, // 编辑回调
         onDelete: { print("🗑️") }, // 删除回调
         onTapCard: { print("👆") },
-        onTapCheck:{ print("not checked")}// 点击卡片回调
+        onTapCheck:{ print("not checked")} // 点击卡片回调
     )
     .environment(\.managedObjectContext, context) // 注入 Core Data 上下文
     .padding() // 添加内边距
+}
+
+extension String {
+    var isSingleEmoji: Bool {
+        return self.count == 1 && self.unicodeScalars.first?.properties.isEmoji == true
+    }
 }
 

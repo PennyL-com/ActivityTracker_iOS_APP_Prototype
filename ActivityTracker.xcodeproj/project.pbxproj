@@ -11,6 +11,10 @@
 		AF6E88792E1CA11500C89453 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF6E88782E1CA11500C89453 /* SwiftUI.framework */; };
 		AF6E88862E1CA11800C89453 /* ActivityTrackerWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AF6E88742E1CA11400C89453 /* ActivityTrackerWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AF6E88DD2E1CF69D00C89453 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF6E88DC2E1CF69D00C89453 /* CoreData.framework */; };
+		E99DA1FB2E26899400FF57D8 /* emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = E99DA1FA2E26899400FF57D8 /* emoji.json */; };
+		E99DA1FC2E26899400FF57D8 /* emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = E99DA1FA2E26899400FF57D8 /* emoji.json */; };
+		E99DA1FD2E26899400FF57D8 /* emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = E99DA1FA2E26899400FF57D8 /* emoji.json */; };
+		E99DA1FE2E26899400FF57D8 /* emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = E99DA1FA2E26899400FF57D8 /* emoji.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +63,7 @@
 		AF6E88762E1CA11400C89453 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		AF6E88782E1CA11500C89453 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		AF6E88DC2E1CF69D00C89453 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		E99DA1FA2E26899400FF57D8 /* emoji.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = emoji.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -145,6 +150,7 @@
 		AF6E88382E1CA06800C89453 = {
 			isa = PBXGroup;
 			children = (
+				E99DA1FA2E26899400FF57D8 /* emoji.json */,
 				AF6E88432E1CA06800C89453 /* ActivityTracker */,
 				AF6E88562E1CA06B00C89453 /* ActivityTrackerTests */,
 				AF6E88602E1CA06B00C89453 /* ActivityTrackerUITests */,
@@ -323,6 +329,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E99DA1FB2E26899400FF57D8 /* emoji.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -330,6 +337,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E99DA1FE2E26899400FF57D8 /* emoji.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -337,6 +345,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E99DA1FD2E26899400FF57D8 /* emoji.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -344,6 +353,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E99DA1FC2E26899400FF57D8 /* emoji.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -536,7 +546,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -568,7 +578,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
