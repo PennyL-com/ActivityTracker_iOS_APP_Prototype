@@ -12,6 +12,8 @@ struct ActivityCardView: View {
     let onTapCheck: () -> Void // 点击打钩按钮的回调函数
 
     var body: some View {
+        let _ = print("ActivityCardView: \(activity.name ?? "") isCompleted = \(activity.isCompleted)")
+        
         HStack(alignment: .center, spacing: 16) { // 水平布局，包含活动图标、信息和操作按钮
             ZStack { // 活动图标区域圆形和icon重叠
                 Circle() // icon灰色的圆形背景
@@ -28,24 +30,30 @@ struct ActivityCardView: View {
                     .foregroundColor(.secondary) // 使用次要颜色
             }
             Spacer() // 弹性空间，将按钮推到右侧
-            Button(action: { // 完成按钮
-                if !activity.isCompleted { // 点击后把这个bool变成true，然后改变样式；如果已经是true就没动作
+            // 完成按钮
+            Button(action: {
+                // 点击按钮时的逻辑
+                if !activity.isCompleted {
                     activity.isCompleted = true
-                    onTapCheck() // 调用回调函数，让父视图处理数据保存和UI更新
+                    onTapCheck()
                 }
             }) {
-                ZStack { // 按钮内容
-                    Circle() // 按钮背景圆形
-                        .fill(activity.isCompleted ? Color.accentColor : Color(.systemGray5)) // 已完成时使用主题色，未完成时使用灰色
+                // 按钮的显示内容
+                ZStack {
+                    // 按钮背景 
+                    Circle()
+                        .fill(activity.isCompleted ? .white : Color(.systemGray5))
                         .frame(width: 32, height: 32)
-                    Image(systemName: activity.isCompleted ? "checkmark" : "checkmark.circle") // 打钩按钮变更逻辑在这
-                        .foregroundColor(activity.isCompleted ? .white : .accentColor) // 已完成时图标为白色，未完成时为主题色
+                    // 按钮图标 
+                    Image(systemName: activity.isCompleted ? "checkmark.circle" : "checkmark")
+                        .foregroundColor(activity.isCompleted ? Color(.systemBlue) : .white)
                         .font(.system(size: 20, weight: .bold))
+                    
                 }
             }
-            .buttonStyle(PlainButtonStyle()) // 使用无样式按钮
-            .disabled(activity.isCompleted) // 如果按钮变绿了就 禁用 按钮
-            .contentShape(Circle()) // 设置点击区域为圆形
+            .buttonStyle(PlainButtonStyle())
+            .disabled(activity.isCompleted)
+            .contentShape(Circle())
             .simultaneousGesture( // 同时手势，防止事件冲突
                 TapGesture().onEnded { } // 空的手势
             )

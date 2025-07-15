@@ -44,6 +44,7 @@ struct AddActivityView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
                         print("Creating activity: \(name)")
+                        print("AddActivityView: isCompleted = \(isCompleted)")
                         let activity = ActivityDataManager.shared.createActivity(
                             name: name,
                             category: category,
@@ -54,6 +55,7 @@ struct AddActivityView: View {
                         )
                         
                         print("Activity created with ID: \(activity.id?.uuidString ?? "nil")")
+                        print("Activity created with isCompleted: \(activity.isCompleted)")
                         
                         // 如果用户选择了completed，立即添加完成记录
                         //TODO：source 需要补全completions相关逻辑

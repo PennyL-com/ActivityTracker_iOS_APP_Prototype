@@ -46,51 +46,13 @@ struct DashboardView: View {
                 .font(.title2)
                 .fontWeight(.bold)
                 .padding(.top, 16)
-            
-            // 添加测试按钮
-            Button("Test Create Activity") {
-                let testActivity = ActivityDataManager.shared.createActivity(
-                    name: "Test Activity \(Date().timeIntervalSince1970)",
-                    category: "Test",
-                    iconName: "star",
-                    optionalDetails: "Test activity created at \(Date())",
-                    createdDate: Date(),
-                    isCompleted: false
-                )
-                print("Test activity created: \(testActivity.name ?? "unnamed")")
-            }
-            
-            Button("Test Fetch Activities") {
-                let activities = ActivityDataManager.shared.fetchActivities()
-                print("Manual fetch found \(activities.count) activities")
-            }
-            .font(.caption)
-            .padding(.horizontal)
-            .padding(.vertical, 4)
-            .background(Color.blue.opacity(0.1))
-            .cornerRadius(8)
         }
     }
 
     private var activityListView: some View {
         ScrollView {
-            VStack(spacing: 16) {
-                // 添加调试信息
-                Text("Activities count: \(activities.count)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .padding(.top)
-                
-                if activities.isEmpty {
-                    Text("No activities found")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
-                        .padding()
-                } else {
-                    ForEach(activities) { activity in
-                        activityCardView(for: activity)
-                    }
-                }
+            ForEach(activities) { activity in
+                activityCardView(for: activity)
             }
             .padding(.horizontal)
         }
@@ -135,7 +97,7 @@ struct DashboardView: View {
                 selectedActivity = activity
             },
             onTapCheck: { // 点击打钩按钮事件在这里
-                activity.isCompleted = true
+                // activity.isCompleted = true
                 manager.save() // 保存到 Core Data
                 // @FetchRequest 会自动更新，不需要手动刷新
             }
