@@ -9,13 +9,15 @@ struct DashboardView: View {
     @State private var showEdit: Activity? // 当前要编辑的活动，nil表示不显示编辑界面
     @State private var selectedActivity: Activity? = nil // 当前选中的活动（用于查看详情）
     let manager = ActivityDataManager.shared // 活动数据管理器单例实例
-    @State private var activities: [Activity] = [] // 当前显示的活动列表
-
-    /// 重新加载活动数据
-    /// 从 Core Data 中获取最新的活动列表并更新 UI
-    private func reload() {
-        activities = manager.fetchActivities() // 从数据管理器获取所有活动
-    }
+    
+    // 使用 @FetchRequest 自动获取和监听 Core Data 数据
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \Activity.createdDate, ascending: false)],
+        animation: .default
+    ) private var activities: FetchedResults<Activity>
+    
+    // 获取 Core Data 上下文
+    @Environment(\.managedObjectContext) private var viewContext
 
     var body: some View {
         NavigationView {
@@ -25,35 +27,79 @@ struct DashboardView: View {
                 Spacer()
                 addButtonView
             }
-            .sheet(isPresented: $showAdd, onDismiss: reload) {
-                AddActivityView(onSave: reload)
+            .sheet(isPresented: $showAdd) {
+                AddActivityView(onSave: {}) // @FetchRequest 会自动更新，不需要手动刷新
             }
-            .sheet(item: $showEdit, onDismiss: reload) { activity in
-                EditActivityView(activity: activity, onSave: reload)
+            .sheet(item: $showEdit) { activity in
+                EditActivityView(activity: activity, onSave: {}) // @FetchRequest 会自动更新
             }
             .sheet(item: $selectedActivity) { activity in
                 ActivityDetailView(activity: activity)
             }
-            .onAppear(perform: reload)
             .background(Color(.systemGray6).ignoresSafeArea())
         }
     }
 
     private var headerView: some View {
-        Text("Okie dokie, let's start it!")
-            .font(.title2)
-            .fontWeight(.bold)
-            .padding(.top, 16)
+        VStack(spacing: 8) {
+            Text("Okie dokie, let's start it!")
+                .font(.title2)
+                .fontWeight(.bold)
+                .padding(.top, 16)
+            
+            // 添加测试按钮
+            Button("Test Create Activity") {
+                let testActivity = ActivityDataManager.shared.createActivity(
+                    name: "Test Activity \(Date().timeIntervalSince1970)",
+                    category: "Test",
+                    iconName: "star",
+                    optionalDetails: "Test activity created at \(Date())",
+                    createdDate: Date(),
+                    isCompleted: false
+                )
+                print("Test activity created: \(testActivity.name ?? "unnamed")")
+            }
+            
+            Button("Test Fetch Activities") {
+                let activities = ActivityDataManager.shared.fetchActivities()
+                print("Manual fetch found \(activities.count) activities")
+            }
+            .font(.caption)
+            .padding(.horizontal)
+            .padding(.vertical, 4)
+            .background(Color.blue.opacity(0.1))
+            .cornerRadius(8)
+        }
     }
 
     private var activityListView: some View {
         ScrollView {
             VStack(spacing: 16) {
-                ForEach(activities, id: \.id) { activity in
-                    activityCardView(for: activity)
+                // 添加调试信息
+                Text("Activities count: \(activities.count)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.top)
+                
+                if activities.isEmpty {
+                    Text("No activities found")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                        .padding()
+                } else {
+                    ForEach(activities) { activity in
+                        activityCardView(for: activity)
+                    }
                 }
             }
             .padding(.horizontal)
+        }
+        .onAppear {
+            print("DashboardView appeared, activities count: \(activities.count)")
+            // 打印所有活动的名称用于调试
+            for (index, activity) in activities.enumerated() {
+                print("Activity \(index): \(activity.name ?? "unnamed")")
+            }
         }
     }
 
@@ -74,30 +120,30 @@ struct DashboardView: View {
         }
         ActivityCardView(
             activity: activity,
-            isCompletedToday: isCompletedToday,
             onComplete: {
                 _ = manager.addCompletion(to: activity, source: "app")
-                reload()
+                // @FetchRequest 会自动更新，不需要手动刷新
             },
             onEdit: {
                 showEdit = activity
             },
             onDelete: {
                 manager.deleteActivity(activity)
-                reload()
+                // @FetchRequest 会自动更新，不需要手动刷新
             },
             onTapCard: {
                 selectedActivity = activity
             },
-            onTapCheck: {
-                activity.isCompleted = true 
-                reload()
+            onTapCheck: { // 点击打钩按钮事件在这里
+                activity.isCompleted = true
+                manager.save() // 保存到 Core Data
+                // @FetchRequest 会自动更新，不需要手动刷新
             }
         )
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             Button(role: .destructive) {
                 manager.deleteActivity(activity)
-                reload()
+                // @FetchRequest 会自动更新，不需要手动刷新
             } label: {
                 Label("Delete", systemImage: "trash")
             }

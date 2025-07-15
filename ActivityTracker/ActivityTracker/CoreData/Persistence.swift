@@ -50,14 +50,21 @@ struct PersistenceController {
         if inMemory {
             // 内存存储模式：将存储 URL 设置为 /dev/null
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
-        } else if let groupURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID) {
-            // 使用 App Group 共享目录存储数据库文件
-            let storeURL = groupURL.appendingPathComponent(storeName)
-            let description = NSPersistentStoreDescription(url: storeURL)
-            container.persistentStoreDescriptions = [description]
         } else {
-            // 如果无法获取 App Group 目录，抛出致命错误
-            fatalError("无法获取 App Group 目录，请检查 App Group 配置")
+            // 使用应用沙盒的默认存储位置
+            print("Using default app sandbox storage")
+            // 如果需要 App Group（比如 Widget 支持），可以取消注释下面的代码
+            /*
+            if let groupURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID) {
+                // 使用 App Group 共享目录存储数据库文件
+                let storeURL = groupURL.appendingPathComponent(storeName)
+                let description = NSPersistentStoreDescription(url: storeURL)
+                container.persistentStoreDescriptions = [description]
+                print("Using App Group storage: \(storeURL)")
+            } else {
+                print("App Group not available, using default storage")
+            }
+            */
         }
 
         // 加载持久化存储

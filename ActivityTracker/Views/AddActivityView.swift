@@ -30,7 +30,7 @@ struct AddActivityView: View {
                     HStack {
                         Text("Completed Today")
                         Spacer()
-                        Toggle("", isOn: $isCompleted)
+                        Toggle("", isOn: $isCompleted)// 这里会同步isCompleted状态
                     }
                     
                     TextField("Details", text: $optionalDetails)
@@ -43,18 +43,23 @@ struct AddActivityView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
+                        print("Creating activity: \(name)")
                         let activity = ActivityDataManager.shared.createActivity(
                             name: name,
                             category: category,
                             iconName: iconName,
                             optionalDetails: optionalDetails.isEmpty ? nil : optionalDetails,
                             createdDate: Date(),
-                            isCompleted: isCompleted
+                            isCompleted: isCompleted //所以这里创建activity的时候是会传入isCompleted的
                         )
                         
+                        print("Activity created with ID: \(activity.id?.uuidString ?? "nil")")
+                        
                         // 如果用户选择了completed，立即添加完成记录
+                        //TODO：source 需要补全completions相关逻辑
                         if isCompleted {
-                            _ = ActivityDataManager.shared.addCompletion(to: activity, source: "app")//TODO：source 需要传入补全逻辑
+                            _ = ActivityDataManager.shared.addCompletion(to: activity, source: "app")
+                            print("Completion record added")
                         }
                         
                         onSave()

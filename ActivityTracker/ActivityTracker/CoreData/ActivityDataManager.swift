@@ -52,7 +52,12 @@ class ActivityDataManager {
         // 按创建日期降序排列，最新的活动在前
         request.sortDescriptors = [NSSortDescriptor(key: "createdDate", ascending: false)]
         do {
-            return try context.fetch(request)
+            let results = try context.fetch(request)
+            print("ActivityDataManager fetched \(results.count) activities")
+            for (index, activity) in results.enumerated() {
+                print("  \(index): \(activity.name ?? "unnamed") - \(activity.createdDate ?? Date())")
+            }
+            return results
         } catch {
             print("Fetch Activities Error: \(error)")
             return [] // 出错时返回空数组
@@ -120,9 +125,12 @@ class ActivityDataManager {
         if context.hasChanges { // 检查是否有未保存的更改
             do {
                 try context.save() // 尝试保存到持久化存储
+                print("Core Data saved successfully")
             } catch {
                 print("Save Error: \(error)") // 打印保存错误信息
             }
+        } else {
+            print("No changes to save")
         }
     }
 } 

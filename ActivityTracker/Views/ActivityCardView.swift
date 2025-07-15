@@ -1,14 +1,15 @@
 import SwiftUI
+import CoreData
 
 struct ActivityCardView: View {
 
-    let activity: Activity // 要显示的活动对象
-    @State var isCompletedToday: Bool // 标记今天是否已完成该活动 Altered
-    let onComplete: () -> Void // 完成活动的回调函数 这4个方法是在dashboardview中定义的
+    @ObservedObject var activity: Activity // 要显示的活动对象
+    // @State var isCompletedToday: Bool // 标记今天是否已完成该活动 Altered
+    let onComplete: () -> Void // 完成活动的回调函数 这5个方法是在dashboardview中定义的
     let onEdit: () -> Void // 编辑活动的回调函数
     let onDelete: () -> Void // 删除活动的回调函数
     let onTapCard: () -> Void // 点击卡片的回调函数
-    let onTapCheck: () -> Void // TODO：应该添加一个点击打钩按钮事件
+    let onTapCheck: () -> Void // 点击打钩按钮的回调函数
 
     var body: some View {
         HStack(alignment: .center, spacing: 16) { // 水平布局，包含活动图标、信息和操作按钮
@@ -28,22 +29,22 @@ struct ActivityCardView: View {
             }
             Spacer() // 弹性空间，将按钮推到右侧
             Button(action: { // 完成按钮
-                if !isCompletedToday { // TODO：点击后把这个bool变成true，然后改变样式；如果已经是true就没动作
-                    isCompletedToday = true
+                if !activity.isCompleted { // 点击后把这个bool变成true，然后改变样式；如果已经是true就没动作
+                    activity.isCompleted = true
+                    onTapCheck() // 调用回调函数，让父视图处理数据保存和UI更新
                 }
             }) {
                 ZStack { // 按钮内容
                     Circle() // 按钮背景圆形
-                        //TODO：已测试主题色紫色看来这个 isCompletedToday 是false，所以是灰色, 但是按钮显示已打钩，说明这个逻辑有问题，可能跟dashboardview的重复的方法有关
-                        .fill(isCompletedToday ? Color.accentColor : Color(.systemGray5)) // 已完成时使用主题色，未完成时使用灰色
+                        .fill(activity.isCompleted ? Color.accentColor : Color(.systemGray5)) // 已完成时使用主题色，未完成时使用灰色
                         .frame(width: 32, height: 32)
-                    Image(systemName: isCompletedToday ? "checkmark" : "checkmark.circle") // 按钮图标 TODO：打钩按钮变更逻辑在这，差一个赋值isCompletedToday的逻辑
-                        .foregroundColor(isCompletedToday ? .white : .accentColor) // 已完成时图标为白色，未完成时为主题色
+                    Image(systemName: activity.isCompleted ? "checkmark" : "checkmark.circle") // 打钩按钮变更逻辑在这
+                        .foregroundColor(activity.isCompleted ? .white : .accentColor) // 已完成时图标为白色，未完成时为主题色
                         .font(.system(size: 20, weight: .bold))
                 }
             }
             .buttonStyle(PlainButtonStyle()) // 使用无样式按钮
-            .disabled(isCompletedToday) // 今天已完成时禁用按钮 
+            .disabled(activity.isCompleted) // 如果按钮变绿了就 禁用 按钮
             .contentShape(Circle()) // 设置点击区域为圆形
             .simultaneousGesture( // 同时手势，防止事件冲突
                 TapGesture().onEnded { } // 空的手势
@@ -95,7 +96,6 @@ struct ActivityCardView: View {
     
     return ActivityCardView( // 返回预览视图
         activity: mockActivity, // 传入模拟活动
-        isCompletedToday: false, // 设置为今天未完成
         onComplete: { print("not completed") }, // 完成回调
         onEdit: { print("✏️") }, // 编辑回调
         onDelete: { print("🗑️") }, // 删除回调
