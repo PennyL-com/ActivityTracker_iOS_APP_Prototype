@@ -11,10 +11,10 @@
 		AF6E88792E1CA11500C89453 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF6E88782E1CA11500C89453 /* SwiftUI.framework */; };
 		AF6E88862E1CA11800C89453 /* ActivityTrackerWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AF6E88742E1CA11400C89453 /* ActivityTrackerWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AF6E88DD2E1CF69D00C89453 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF6E88DC2E1CF69D00C89453 /* CoreData.framework */; };
-		E99DA1FB2E26899400FF57D8 /* emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = E99DA1FA2E26899400FF57D8 /* emoji.json */; };
-		E99DA1FC2E26899400FF57D8 /* emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = E99DA1FA2E26899400FF57D8 /* emoji.json */; };
-		E99DA1FD2E26899400FF57D8 /* emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = E99DA1FA2E26899400FF57D8 /* emoji.json */; };
-		E99DA1FE2E26899400FF57D8 /* emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = E99DA1FA2E26899400FF57D8 /* emoji.json */; };
+		E9C4E4E52E2908F80079B24F /* emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = E9C4E4E32E2908F80079B24F /* emoji.json */; };
+		E9C4E4E62E2908F80079B24F /* emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = E9C4E4E32E2908F80079B24F /* emoji.json */; };
+		E9C4E4E72E2908F80079B24F /* emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = E9C4E4E32E2908F80079B24F /* emoji.json */; };
+		E9C4E4E82E2908F80079B24F /* emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = E9C4E4E32E2908F80079B24F /* emoji.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,7 +63,7 @@
 		AF6E88762E1CA11400C89453 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		AF6E88782E1CA11500C89453 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		AF6E88DC2E1CF69D00C89453 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
-		E99DA1FA2E26899400FF57D8 /* emoji.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = emoji.json; sourceTree = "<group>"; };
+		E9C4E4E32E2908F80079B24F /* emoji.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = emoji.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -150,7 +150,7 @@
 		AF6E88382E1CA06800C89453 = {
 			isa = PBXGroup;
 			children = (
-				E99DA1FA2E26899400FF57D8 /* emoji.json */,
+				E9C4E4E42E2908F80079B24F /* Resource */,
 				AF6E88432E1CA06800C89453 /* ActivityTracker */,
 				AF6E88562E1CA06B00C89453 /* ActivityTrackerTests */,
 				AF6E88602E1CA06B00C89453 /* ActivityTrackerUITests */,
@@ -179,6 +179,15 @@
 				AF6E88782E1CA11500C89453 /* SwiftUI.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		E9C4E4E42E2908F80079B24F /* Resource */ = {
+			isa = PBXGroup;
+			children = (
+				E9C4E4E32E2908F80079B24F /* emoji.json */,
+			);
+			name = Resource;
+			path = ActivityTracker/Resource;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -329,7 +338,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E99DA1FB2E26899400FF57D8 /* emoji.json in Resources */,
+				E9C4E4E72E2908F80079B24F /* emoji.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -337,7 +346,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E99DA1FE2E26899400FF57D8 /* emoji.json in Resources */,
+				E9C4E4E82E2908F80079B24F /* emoji.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -345,7 +354,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E99DA1FD2E26899400FF57D8 /* emoji.json in Resources */,
+				E9C4E4E62E2908F80079B24F /* emoji.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -353,7 +362,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E99DA1FC2E26899400FF57D8 /* emoji.json in Resources */,
+				E9C4E4E52E2908F80079B24F /* emoji.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

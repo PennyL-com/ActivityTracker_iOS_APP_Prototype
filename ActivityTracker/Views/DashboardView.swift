@@ -50,12 +50,14 @@ struct DashboardView: View {
     }
 
     private var activityListView: some View {
-        ScrollView {
+        List {
             ForEach(activities) { activity in
                 activityCardView(for: activity)
+                    .listRowSeparator(.hidden) // 可选：隐藏分割线
+                    .listRowBackground(Color.clear) // 可选：透明背景
             }
-            .padding(.horizontal)
         }
+        .listStyle(.plain) // 可选：去除多余样式
         .onAppear {
             print("DashboardView appeared, activities count: \(activities.count)")
             // 打印所有活动的名称用于调试
@@ -83,8 +85,20 @@ struct DashboardView: View {
         ActivityCardView(
             activity: activity,
             onComplete: {
-                _ = manager.addCompletion(to: activity, source: "app")
-                // @FetchRequest 会自动更新，不需要手动刷新
+                if !isCompletedToday {
+                    let newCompletion = Completion(context: viewContext)
+                    newCompletion.id = UUID()
+                    newCompletion.completedDate = Date()
+                    newCompletion.source = "app"
+                    newCompletion.activity = activity
+                    do {
+                        try viewContext.save()
+                    } catch {
+                        print("保存完成记录失败: \(error)")
+                    }
+                    // 额外回调
+                    manager.save()
+                }
             },
             onEdit: {
                 showEdit = activity
@@ -96,20 +110,7 @@ struct DashboardView: View {
             onTapCard: {
                 selectedActivity = activity
             },
-            onTapCheck: { // 点击打钩按钮事件在这里
-                // activity.isCompleted = true
-                manager.save() // 保存到 Core Data
-                // @FetchRequest 会自动更新，不需要手动刷新
-            }
         )
-        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-            Button(role: .destructive) {
-                manager.deleteActivity(activity)
-                // @FetchRequest 会自动更新，不需要手动刷新
-            } label: {
-                Label("Delete", systemImage: "trash")
-            }
-        }
     }
 
     private var addButtonView: some View {
@@ -125,16 +126,6 @@ struct DashboardView: View {
             .cornerRadius(16)
         }
         .padding([.horizontal, .bottom])
-    }
-
-    /// 计算活动自上次完成以来经过的天数
-    /// - Parameter activity: 要计算的活动
-    /// - Returns: 天数，如果没有完成记录则返回 -1
-    //TODO：这个方法在ActivityCardView中也有，应该抽取一个函数
-    func daysSinceLastCompletion(activity: Activity) -> Int {
-        let completions = manager.fetchCompletions(for: activity) // 获取活动的完成记录
-        guard let last = completions.first?.completedDate else { return -1 } // 如果没有完成记录返回 -1
-        return Calendar.current.dateComponents([.day], from: last, to: Date()).day ?? -1 // 计算天数差
     }
 }
 

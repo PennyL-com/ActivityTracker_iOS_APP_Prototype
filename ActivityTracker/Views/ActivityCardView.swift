@@ -9,7 +9,6 @@ struct ActivityCardView: View {
     let onEdit: () -> Void // 编辑活动的回调函数
     let onDelete: () -> Void // 删除活动的回调函数
     let onTapCard: () -> Void // 点击卡片的回调函数
-    let onTapCheck: () -> Void // 点击打钩按钮的回调函数
 
     @Environment(\.managedObjectContext) var context // 获取 Core Data 上下文
     
@@ -43,28 +42,14 @@ struct ActivityCardView: View {
             VStack(alignment: .leading, spacing: 4) { // 活动信息区域
                 Text(activity.name ?? "") // 活动名称
                     .font(.headline)
-                Text("Last done: \(daysSinceLastCompletion()) days ago") // 显示距离上次完成的天数 
+                Text("Last done: \(ActivityUtils.daysSinceLastCompletion(for: activity)) days ago") // 显示距离上次完成的天数 
                     .font(.subheadline)
                     .foregroundColor(.secondary) // 使用次要颜色
             }
             Spacer() // 弹性空间，将按钮推到右侧
             // 完成按钮
             Button(action: {
-                // 点击按钮时的逻辑
-                if !isCompletedToday {
-                    // 新增：创建并保存 Completion 记录
-                    let newCompletion = Completion(context: context)
-                    newCompletion.id = UUID()
-                    newCompletion.completedDate = Date()
-                    newCompletion.source = "app"
-                    newCompletion.activity = activity
-                    do {
-                        try context.save()
-                    } catch {
-                        print("保存完成记录失败: \(error)")
-                    }
-                    onTapCheck()
-                }
+                onComplete()
             }) {
                 // 按钮的显示内容
                 ZStack {
@@ -93,21 +78,14 @@ struct ActivityCardView: View {
         .onTapGesture { // 点击卡片手势
             onTapCard() // 点击卡片时触发回调 具体定义在dashboardView中
         }
-        .contextMenu { // 长按显示上下文菜单
-            Button(action: onEdit) { // 编辑选项
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button(role: .destructive, action: onDelete) {
+                Label("Delete", systemImage: "trash")
+            }
+            Button(action: onEdit) {
                 Label("Edit", systemImage: "pencil")
             }
-            Button(role: .destructive, action: onDelete) { // 删除选项，使用破坏性样式
-                Label("Delete", systemImage: "trash")// TODO：ondelete会把相关数据删掉然后refresh，于是没有定义样式的必要，以后可以考虑添加到临时删除的列表
-            }
         }
-    }
-    
-    // TODO：跟DashboardView的逻辑重复，应该抽取一个函数
-    func daysSinceLastCompletion() -> Int { // 计算距离上次完成的天数
-        let completions = (activity.completions as? Set<Completion>)?.sorted { ($0.completedDate ?? .distantPast) > ($1.completedDate ?? .distantPast) } // 获取活动的所有完成记录，按完成日期降序排列
-        guard let last = completions?.first?.completedDate else { return -1 } // 获取最近的完成记录，如果没有则返回-1
-        return Calendar.current.dateComponents([.day], from: last, to: Date()).day ?? -1 // 计算从上次完成到现在的天数
     }
 
 }
@@ -134,8 +112,7 @@ struct ActivityCardView: View {
         onComplete: { print("not completed") }, // 完成回调
         onEdit: { print("✏️") }, // 编辑回调
         onDelete: { print("🗑️") }, // 删除回调
-        onTapCard: { print("👆") },
-        onTapCheck:{ print("not checked")} // 点击卡片回调
+        onTapCard: { print("👆") }
     )
     .environment(\.managedObjectContext, context) // 注入 Core Data 上下文
     .padding() // 添加内边距
