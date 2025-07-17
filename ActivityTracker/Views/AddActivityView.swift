@@ -76,8 +76,6 @@ struct AddActivityView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
-                        print("Creating activity: \(name)")
-                        print("AddActivityView: isCompleted = \(isCompleted)")
                         // 判断用户选择的日期是否为今天
                         let isToday = Calendar.current.isDateInToday(selectedDate)
                         let activity = ActivityDataManager.shared.createActivity(
@@ -88,8 +86,7 @@ struct AddActivityView: View {
                             createdDate: Date(),
                             isCompleted: isToday // 只有今天才设置为已完成，卡片才会打钩
                         )
-                        print("Activity created with ID: \(activity.id?.uuidString ?? "nil")")
-                        print("Activity created with isCompleted: \(activity.isCompleted)")
+
                         // 如果用户选择了completed，立即添加完成记录，日期为用户选定日期（未选则为今天）
                         if isCompleted {
                             ActivityDataManager.shared.addCompletion(to: activity, completedDate: selectedDate, source: "app")

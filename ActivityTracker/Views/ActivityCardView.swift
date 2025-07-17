@@ -11,6 +11,19 @@ struct ActivityCardView: View {
     let onTapCard: () -> Void // 点击卡片的回调函数
     let onTapCheck: () -> Void // 点击打钩按钮的回调函数
 
+    @Environment(\.managedObjectContext) var context // 获取 Core Data 上下文
+    
+    // 新增：判断今天是否已完成
+    var isCompletedToday: Bool {
+        let completions = (activity.completions as? Set<Completion>) ?? []
+        return completions.contains { completion in
+            if let date = completion.completedDate {
+                return Calendar.current.isDateInToday(date)
+            }
+            return false
+        }
+    }
+
     var body: some View {
         let _ = print("ActivityCardView: \(activity.name ?? "") isCompleted = \(activity.isCompleted)")
         
@@ -38,8 +51,18 @@ struct ActivityCardView: View {
             // 完成按钮
             Button(action: {
                 // 点击按钮时的逻辑
-                if !activity.isCompleted {
-                    activity.isCompleted = true
+                if !isCompletedToday {
+                    // 新增：创建并保存 Completion 记录
+                    let newCompletion = Completion(context: context)
+                    newCompletion.id = UUID()
+                    newCompletion.completedDate = Date()
+                    newCompletion.source = "app"
+                    newCompletion.activity = activity
+                    do {
+                        try context.save()
+                    } catch {
+                        print("保存完成记录失败: \(error)")
+                    }
                     onTapCheck()
                 }
             }) {
@@ -47,17 +70,16 @@ struct ActivityCardView: View {
                 ZStack {
                     // 按钮背景 
                     Circle()
-                        .fill(activity.isCompleted ? .white : Color(.systemGray5))
+                        .fill(isCompletedToday ? .white : Color(.systemGray5))
                         .frame(width: 32, height: 32)
                     // 按钮图标 
-                    Image(systemName: activity.isCompleted ? "checkmark.circle" : "checkmark")
-                        .foregroundColor(activity.isCompleted ? Color(.systemBlue) : .white)
+                    Image(systemName: isCompletedToday ? "checkmark.circle" : "checkmark")
+                        .foregroundColor(isCompletedToday ? Color(.systemBlue) : .white)
                         .font(.system(size: 20, weight: .bold))
-                    
                 }
             }
             .buttonStyle(PlainButtonStyle())
-            .disabled(activity.isCompleted)
+            .disabled(isCompletedToday)
             .contentShape(Circle())
             .simultaneousGesture( // 同时手势，防止事件冲突
                 TapGesture().onEnded { } // 空的手势
