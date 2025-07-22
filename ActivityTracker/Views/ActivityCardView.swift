@@ -6,7 +6,6 @@ struct ActivityCardView: View {
     @ObservedObject var activity: Activity // 要显示的活动对象
     // @State var isCompletedToday: Bool // 标记今天是否已完成该活动 Altered
     let onComplete: () -> Void // 完成活动的回调函数 这5个方法是在dashboardview中定义的
-    let onEdit: () -> Void // 编辑活动的回调函数
     let onDelete: () -> Void // 删除活动的回调函数
     let onTapCard: () -> Void // 点击卡片的回调函数
 
@@ -82,9 +81,7 @@ struct ActivityCardView: View {
             Button(role: .destructive, action: onDelete) {
                 Label("Delete", systemImage: "trash")
             }
-            Button(action: onEdit) {
-                Label("Edit", systemImage: "pencil")
-            }
+            // 移除了编辑按钮
         }
     }
 
@@ -110,7 +107,6 @@ struct ActivityCardView: View {
     return ActivityCardView( // 返回预览视图
         activity: mockActivity, // 传入模拟活动
         onComplete: { print("not completed") }, // 完成回调
-        onEdit: { print("✏️") }, // 编辑回调
         onDelete: { print("🗑️") }, // 删除回调
         onTapCard: { print("👆") }
     )
