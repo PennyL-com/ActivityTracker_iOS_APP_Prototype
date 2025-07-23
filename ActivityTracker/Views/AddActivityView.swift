@@ -13,6 +13,9 @@ struct AddActivityView: View {
     @State private var startFromDate = Date()
     @State private var showCalendarInline = false
     @State private var selectedDates: [Date] = []
+    // 新增：非法日期弹窗相关状态
+    @State private var showInvalidDateAlert = false
+    @State private var invalidDateMessage = ""
     
     let categories = ["Hobby", "Health", "Pet", "Home", "Others", "Education"].sorted()
     var onSave: () -> Void
@@ -80,7 +83,18 @@ struct AddActivityView: View {
                                 .font(.footnote)
                             CalendarView(
                                 isEditing: true,
-                                pendingAddDates: Binding(get: { Set(selectedDates) }, set: { selectedDates = Array($0) }),
+                                pendingAddDates: Binding(get: { Set(selectedDates) }, set: { newDates in
+                                    // 日期校验逻辑
+                                    let minDate = Calendar.current.startOfDay(for: startFromDate)
+                                    let maxDate = Calendar.current.startOfDay(for: Date())
+                                    let invalidDates = newDates.filter { $0 < minDate || $0 > maxDate }
+                                    if !invalidDates.isEmpty {
+                                        invalidDateMessage = "Choose dates from start date to today"
+                                        showInvalidDateAlert = true
+                                        return // 不更新 selectedDates
+                                    }
+                                    selectedDates = Array(newDates)
+                                }),
                                 isBlankCalendar: true
                             )
                             .frame(height: 320)
@@ -131,6 +145,9 @@ struct AddActivityView: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") { presentationMode.wrappedValue.dismiss() }
                 }
+            }
+            .alert(isPresented: $showInvalidDateAlert) {
+                Alert(title: Text("Invalid Date"), message: Text(invalidDateMessage), dismissButton: .default(Text("OK")))
             }
         }
     }
