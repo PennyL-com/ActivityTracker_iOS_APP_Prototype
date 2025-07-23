@@ -8,6 +8,8 @@ struct ActivityCardView: View {
     let onComplete: () -> Void // 完成活动的回调函数 这5个方法是在dashboardview中定义的
     let onDelete: () -> Void // 删除活动的回调函数
     let onTapCard: () -> Void // 点击卡片的回调函数
+    let onSort: () -> Void // 新增：排序按钮回调
+    let showSort: Bool // 新增：是否显示排序按钮
 
     @Environment(\.managedObjectContext) var context // 获取 Core Data 上下文
     
@@ -73,11 +75,17 @@ struct ActivityCardView: View {
         .background(Color.white) // 白色背景
         .cornerRadius(18) // 圆角半径
         .shadow(color: Color(.black).opacity(0.04), radius: 6, x: 0, y: 2) // 添加阴影效果
-        .contentShape(Rectangle()) // 设置整个卡片为可点击区域 TODO：点击区域是否跟button冲突？
+        .contentShape(Rectangle()) 
         .onTapGesture { // 点击卡片手势
             onTapCard() // 点击卡片时触发回调 具体定义在dashboardView中
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            if showSort {
+                Button(action: onSort) {
+                    Label("Sort", systemImage: "arrow.up.arrow.down")
+                }
+                .tint(.blue)
+            }
             Button(role: .destructive, action: onDelete) {
                 Label("Delete", systemImage: "trash")
             }
@@ -108,7 +116,9 @@ struct ActivityCardView: View {
         activity: mockActivity, // 传入模拟活动
         onComplete: { print("not completed") }, // 完成回调
         onDelete: { print("🗑️") }, // 删除回调
-        onTapCard: { print("👆") }
+        onTapCard: { print("👆") },
+        onSort: { print("Sort") },
+        showSort: true
     )
     .environment(\.managedObjectContext, context) // 注入 Core Data 上下文
     .padding() // 添加内边距

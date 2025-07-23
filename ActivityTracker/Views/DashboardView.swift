@@ -7,12 +7,13 @@ struct DashboardView: View {
     // MARK: - 状态变量
     @State private var showAdd = false // 控制是否显示添加活动的弹出视图
     @State private var selectedActivity: Activity? = nil // 当前选中的活动（用于查看详情）
-    @State private var showTestDataAlert = false // 控制是否显示测试数据确认对话框
+    @State private var isSorting = false // 是否处于排序模式
+    @State private var sortActivities: [Activity] = [] // 排序模式下的本地活动数组
     let manager = ActivityDataManager.shared // 活动数据管理器单例实例
     
     // 使用 @FetchRequest 自动获取和监听 Core Data 数据
     @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Activity.createdDate, ascending: false)],
+        sortDescriptors: [NSSortDescriptor(keyPath: \Activity.sortOrder, ascending: true)],
         animation: .default
     ) private var activities: FetchedResults<Activity>
     
@@ -38,10 +39,12 @@ struct DashboardView: View {
             .background(Color(.systemGray6).ignoresSafeArea())
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("测试数据") {
-                        showTestDataAlert = true
+                    if isSorting {
+                        Button("保存") {
+                            saveSortOrder()
+                        }
+                        .font(.caption)
                     }
-                    .font(.caption)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     NavigationLink(destination: CalendarView()) {
@@ -49,17 +52,6 @@ struct DashboardView: View {
                             .font(.title2)
                     }
                 }
-            }
-            .alert("生成测试数据", isPresented: $showTestDataAlert) {
-                Button("生成") {
-                    TestDataGenerator.generateSampleData(context: viewContext)
-                }
-                Button("清除所有数据") {
-                    TestDataGenerator.clearAllData(context: viewContext)
-                }
-                Button("取消", role: .cancel) { }
-            } message: {
-                Text("这将生成一些示例活动和完成记录来演示日历功能")
             }
         }
     }
@@ -74,78 +66,138 @@ struct DashboardView: View {
     }
 
     private var activityListView: some View {
-        List {
-            ForEach(activities) { activity in
-                activityCardView(for: activity)
-                    .listRowSeparator(.hidden) // 可选：隐藏分割线
-                    .listRowBackground(Color.clear) // 可选：透明背景
+        Group {
+            if isSorting {
+                List {
+                    ForEach(sortActivities, id: \.id) { activity in
+                        activityCardView(for: activity, showSort: false)
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                    }
+                    .onMove(perform: moveActivity)
+                }
+                .listStyle(.plain)
+                .environment(\.editMode, .constant(.active))
+            } else {
+                List {
+                    ForEach(activities) { activity in
+                        activityCardView(for: activity, showSort: true)
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                    }
+                }
+                .listStyle(.plain)
             }
         }
-        .listStyle(.plain) // 可选：去除多余样式
         .onAppear {
-            print("DashboardView appeared, activities count: \(activities.count)")
-            // 打印所有活动的名称用于调试
-            for (index, activity) in activities.enumerated() {
-                print("Activity \(index): \(activity.name ?? "unnamed")")
+            if isSorting {
+                sortActivities = activities.map { $0 }
             }
         }
     }
 
     @ViewBuilder
-    private func activityCardView(for activity: Activity) -> some View {
-        // 这里填原来 ForEach 里的内容
-        let completions = (activity.completions as? Set<Completion>) ?? []
-        // 检查今天是否已完成该活动
-        let isCompletedToday = completions.contains { completion in
-            if let date = completion.completedDate {
-                let isToday = Calendar.current.isDateInToday(date)
-                // 添加调试信息，帮助排查问题
-                print("Activity: \(activity.name ?? ""), completion date: \(date), isToday: \(isToday)")
-                return isToday
-            }
-            return false
-        }
-        ActivityCardView(
-            activity: activity,
-            onComplete: {
-                if !isCompletedToday {
-                    let newCompletion = Completion(context: viewContext)
-                    newCompletion.id = UUID()
-                    newCompletion.completedDate = Date()
-                    newCompletion.source = "app"
-                    newCompletion.activity = activity
-                    do {
-                        try viewContext.save()
-                    } catch {
-                        print("保存完成记录失败: \(error)")
+    private func activityCardView(for activity: Activity, showSort: Bool) -> some View {
+        if isSorting {
+            // 排序模式下只显示icon和name，极简渲染，不显示任何按钮
+            HStack(alignment: .center, spacing: 16) {
+                ZStack {
+                    Circle()
+                        .fill(Color(.systemGray5))
+                        .frame(width: 48, height: 48)
+                    if let icon = activity.iconName, icon.isSingleEmoji {
+                        Text(icon)
+                            .font(.system(size: 28))
+                    } else {
+                        Image(systemName: activity.iconName ?? "circle")
+                            .font(.system(size: 28))
                     }
-                    // 额外回调
-                    manager.save()
                 }
-            },
-            onDelete: {
-                manager.deleteActivity(activity)
-                // @FetchRequest 会自动更新，不需要手动刷新
-            },
-            onTapCard: {
-                selectedActivity = activity
-            },
-        )
+                Text(activity.name ?? "")
+                    .font(.headline)
+                Spacer()
+            }
+            .padding()
+            .background(Color.white)
+            .cornerRadius(18)
+            .shadow(color: Color(.black).opacity(0.04), radius: 6, x: 0, y: 2)
+        } else {
+            // 普通模式下完整卡片
+            let completions = (activity.completions as? Set<Completion>) ?? []
+            let isCompletedToday = completions.contains { completion in
+                if let date = completion.completedDate {
+                    let isToday = Calendar.current.isDateInToday(date)
+                    return isToday
+                }
+                return false
+            }
+            ActivityCardView(
+                activity: activity,
+                onComplete: {
+                    if !isCompletedToday {
+                        let newCompletion = Completion(context: viewContext)
+                        newCompletion.id = UUID()
+                        newCompletion.completedDate = Date()
+                        newCompletion.source = "app"
+                        newCompletion.activity = activity
+                        do {
+                            try viewContext.save()
+                        } catch {
+                            print("保存完成记录失败: \(error)")
+                        }
+                        manager.save()
+                    }
+                },
+                onDelete: {
+                    manager.deleteActivity(activity)
+                },
+                onTapCard: {
+                    selectedActivity = activity
+                },
+                onSort: {
+                    if !isSorting {
+                        sortActivities = activities.map { $0 }
+                        isSorting = true
+                    }
+                },
+                showSort: showSort
+            )
+        }
+    }
+
+    private func moveActivity(from source: IndexSet, to destination: Int) {
+        sortActivities.move(fromOffsets: source, toOffset: destination)
+    }
+
+    private func saveSortOrder() {
+        for (index, activity) in sortActivities.enumerated() {
+            activity.setValue(Int64(index), forKey: "sortOrder")
+        }
+        do {
+            try viewContext.save()
+            isSorting = false
+        } catch {
+            print("保存排序失败: \(error)")
+        }
     }
 
     private var addButtonView: some View {
-        Button(action: { showAdd = true }) {
-            HStack {
-                Image(systemName: "plus")
-                Text(LocalizedStringKey("Add Activity"))
+        Group {
+            if !isSorting {
+                Button(action: { showAdd = true }) {
+                    HStack {
+                        Image(systemName: "plus")
+                        Text(LocalizedStringKey("Add Activity"))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.accentColor)
+                    .foregroundColor(.white)
+                    .cornerRadius(16)
+                }
+                .padding([.horizontal, .bottom])
             }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color.accentColor)
-            .foregroundColor(.white)
-            .cornerRadius(16)
         }
-        .padding([.horizontal, .bottom])
     }
 }
 
