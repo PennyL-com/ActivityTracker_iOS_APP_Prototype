@@ -13,7 +13,6 @@
 		AF6E88DD2E1CF69D00C89453 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF6E88DC2E1CF69D00C89453 /* CoreData.framework */; };
 		E9C4E4E52E2908F80079B24F /* emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = E9C4E4E32E2908F80079B24F /* emoji.json */; };
 		E9C4E4E62E2908F80079B24F /* emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = E9C4E4E32E2908F80079B24F /* emoji.json */; };
-		E9C4E4E72E2908F80079B24F /* emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = E9C4E4E32E2908F80079B24F /* emoji.json */; };
 		E9C4E4E82E2908F80079B24F /* emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = E9C4E4E32E2908F80079B24F /* emoji.json */; };
 /* End PBXBuildFile section */
 
@@ -338,7 +337,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E9C4E4E72E2908F80079B24F /* emoji.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -18,7 +18,7 @@ class ActivityDataManager {
     /// 创建新的活动记录
     /// - Parameters:
     ///   - name: 活动名称
-    ///   - category: 活动类别
+    ///   - category: 活动类别（Category 实体）
     ///   - iconName: 图标名称，可选
     ///   - optionalDetails: 可选的详细描述
     ///   - createdDate: 创建日期，默认为当前时间
@@ -26,7 +26,7 @@ class ActivityDataManager {
     /// - Returns: 新创建的活动对象
     func createActivity(
         name: String,
-        category: String,
+        category: Category,
         iconName: String? = nil,
         optionalDetails: String? = nil,
         createdDate: Date = Date(),
@@ -36,7 +36,7 @@ class ActivityDataManager {
         let activity = Activity(context: context)
         activity.id = UUID() // 生成唯一标识符
         activity.name = name
-        activity.category = category
+        activity.belongToCategory = category // 关联 Category 实体
         activity.iconName = iconName
         activity.optionalDetails = optionalDetails
         activity.createdDate = createdDate
@@ -61,6 +61,22 @@ class ActivityDataManager {
         } catch {
             print("Fetch Activities Error: \(error)")
             return [] // 出错时返回空数组
+        }
+    }
+
+    /// 获取指定分类下的所有活动记录，按创建日期降序排列
+    /// - Parameter category: 分类实体
+    /// - Returns: 活动数组
+    func fetchActivities(for category: Category) -> [Activity] {
+        let request: NSFetchRequest<Activity> = Activity.fetchRequest()
+        request.predicate = NSPredicate(format: "belongToCategory == %@", category)
+        request.sortDescriptors = [NSSortDescriptor(key: "createdDate", ascending: false)]
+        do {
+            let results = try context.fetch(request)
+            return results
+        } catch {
+            print("Fetch Activities for Category Error: \(error)")
+            return []
         }
     }
 
@@ -116,6 +132,49 @@ class ActivityDataManager {
     func deleteCompletion(_ completion: Completion) {
         context.delete(completion) // 从上下文中删除完成记录
         save() // 保存更改
+    }
+
+    // MARK: - Category CRUD
+
+    /// 创建新的分类
+    /// - Parameter name: 分类名称
+    /// - Returns: 新创建的 Category 实体
+    func createCategory(name: String) -> Category {
+        let category = Category(context: context)
+        category.categoryId = UUID()
+        category.name = name
+        save()
+        return category
+    }
+
+    /// 获取所有分类，按名称升序排列
+    /// - Returns: 分类数组
+    func fetchCategories() -> [Category] {
+        let request: NSFetchRequest<Category> = Category.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
+        do {
+            return try context.fetch(request)
+        } catch {
+            print("Fetch Categories Error: \(error)")
+            return []
+        }
+    }
+
+    /// 删除指定的分类
+    /// - Parameter category: 要删除的 Category 实体
+    func deleteCategory(_ category: Category) {
+        context.delete(category)
+        save()
+    }
+
+    /// 确保默认分类存在
+    func ensureDefaultCategories() {
+        let defaultNames = ["Hobby", "Health", "Pet", "Home", "Education"]
+        let existingNames = fetchCategories().compactMap { $0.name }
+        for name in defaultNames where !existingNames.contains(name) {
+            _ = createCategory(name: name)
+        }
+        save()
     }
 
     // MARK: - Save

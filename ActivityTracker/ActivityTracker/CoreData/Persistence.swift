@@ -16,11 +16,13 @@ struct PersistenceController {
         
         // 创建示例数据用于 SwiftUI 预览
         for _ in 0..<10 {
-            // 创建预览用的活动数据
+            let category = Category(context: viewContext)
+            category.categoryId = UUID()
+            category.name = "Preview Category"
             let activity = Activity(context: viewContext)
             activity.id = UUID()
             activity.name = "Preview Activity"
-            activity.category = "Preview"
+            activity.belongToCategory = category
             activity.createdDate = Date()
         }
         

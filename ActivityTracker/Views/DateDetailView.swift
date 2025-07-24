@@ -121,7 +121,7 @@ struct CompletionRowView: View {
                         .fontWeight(.medium)
                     // 只读展示分类
                     HStack(spacing: 4) {
-                        Text(activity.category ?? "")
+                        Text(activity.belongToCategory?.name ?? "")
                             .font(.caption)
                             .foregroundColor(.secondary)
                         // 移除编辑按钮
@@ -171,20 +171,22 @@ struct CompletionRowView: View {
 
 #Preview {
     let context = PersistenceController.preview.container.viewContext
-    
-    // 创建模拟数据
+    // 创建模拟分类
+    let mockCategory = Category(context: context)
+    mockCategory.categoryId = UUID()
+    mockCategory.name = "健康"
+    // 创建模拟活动
     let activity = Activity(context: context)
     activity.id = UUID()
     activity.name = "冥想"
-    activity.category = "健康"
+    activity.belongToCategory = mockCategory
     activity.iconName = "🧘‍♀️"
-    
+    // 创建模拟完成记录
     let completion = Completion(context: context)
     completion.id = UUID()
     completion.completedDate = Date()
     completion.source = "app"
     completion.activity = activity
-    
     return DateDetailView(selectedDate: Date())
         .environment(\.managedObjectContext, context)
 } 

@@ -98,30 +98,37 @@ struct ActivityCardView: View {
 
 #Preview {
     let context = PersistenceController.preview.container.viewContext // 创建预览用的 Core Data 上下文
-    let mockActivity = Activity(context: context) // 创建模拟活动数据
-    mockActivity.id = UUID() // 设置唯一标识符
-    mockActivity.name = "Meditation" // 设置活动名称
-    mockActivity.iconName = "leaf.fill" // 设置图标名称
-    mockActivity.category = "Health" // 设置活动类别
-    mockActivity.createdDate = Date() // 设置创建日期
-    
+
+    // 创建模拟分类
+    let mockCategory = Category(context: context)
+    mockCategory.categoryId = UUID()
+    mockCategory.name = "Wellness"
+
+    // 创建模拟活动数据
+    let mockActivity = Activity(context: context)
+    mockActivity.id = UUID()
+    mockActivity.name = "Meditation"
+    mockActivity.iconName = "leaf.fill"
+    mockActivity.belongToCategory = mockCategory // 赋值为关系对象
+    mockActivity.createdDate = Date()
+
     // 添加模拟的完成记录
-    let mockCompletion = Completion(context: context) // 创建模拟完成记录
-    mockCompletion.id = UUID() // 设置唯一标识符
-    mockCompletion.completedDate = Calendar.current.date(byAdding: .day, value: -3, to: Date()) // 设置为3天前完成
-    mockCompletion.source = "app" // 设置完成来源
-    mockCompletion.activity = mockActivity // 建立与活动的关联关系
-    
-    return ActivityCardView( // 返回预览视图
-        activity: mockActivity, // 传入模拟活动
-        onComplete: { print("not completed") }, // 完成回调
-        onDelete: { print("🗑️") }, // 删除回调
+    let mockCompletion = Completion(context: context)
+    mockCompletion.id = UUID()
+    mockCompletion.completedDate = Calendar.current.date(byAdding: .day, value: -3, to: Date())
+    mockCompletion.source = "app"
+    mockCompletion.activity = mockActivity
+
+    return ActivityCardView(
+        activity: mockActivity,
+        onComplete: { print("not completed") },
+        onDelete: { print("🗑️") },
         onTapCard: { print("👆") },
         onSort: { print("Sort") },
         showSort: true
     )
-    .environment(\.managedObjectContext, context) // 注入 Core Data 上下文
-    .padding() // 添加内边距
+    .environment(\.managedObjectContext, context)
+    .padding()
 }
 
 extension String {

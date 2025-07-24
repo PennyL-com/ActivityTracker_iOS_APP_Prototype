@@ -5,7 +5,7 @@ import CoreData
 struct AddActivityView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var name = ""
-    @State private var category = "Hobby"
+    @State private var category: Category? = nil
     @State private var optionalDetails = ""
     @State private var selectedEmoji: String = ""
     @State private var showEmojiPicker = false
@@ -17,7 +17,10 @@ struct AddActivityView: View {
     @State private var showInvalidDateAlert = false
     @State private var invalidDateMessage = ""
     
-    let categories = ["Hobby", "Health", "Pet", "Home", "Others", "Education"].sorted()
+    @FetchRequest(
+        entity: Category.entity(),
+        sortDescriptors: [NSSortDescriptor(keyPath: \Category.name, ascending: true)]
+    ) var categories: FetchedResults<Category>
     var onSave: () -> Void
     
     var body: some View {
@@ -35,7 +38,6 @@ struct AddActivityView: View {
                                 Text("Category")
                                 Spacer()
                                 CategoryPickerView(selection: $category)
-                                    .frame(maxWidth: 120)
                             }
                             HStack {
                                 Text("Select Icon")
@@ -61,7 +63,7 @@ struct AddActivityView: View {
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                                 TextEditor(text: $optionalDetails)
-                                    .frame(minHeight: 80, maxHeight: 200)
+                                    .frame(minHeight: 40, maxHeight: 200)
                                     .padding(2)
                                     .background(Color(.systemGray6))
                                     .cornerRadius(8)
@@ -75,39 +77,11 @@ struct AddActivityView: View {
                         )
 
                         // 历史日历分组
-                        VStack(alignment: .leading, spacing: 12) {
-                            DatePicker("Start From", selection: $startFromDate, displayedComponents: .date)
-                                .datePickerStyle(CompactDatePickerStyle())
-                            Text("Choose history completion dates:")
-                                .foregroundColor(.secondary)
-                                .font(.footnote)
-                            CalendarView(
-                                isEditing: true,
-                                pendingAddDates: Binding(get: { Set(selectedDates) }, set: { newDates in
-                                    // 日期校验逻辑
-                                    let minDate = Calendar.current.startOfDay(for: startFromDate)
-                                    let maxDate = Calendar.current.startOfDay(for: Date())
-                                    let invalidDates = newDates.filter { $0 < minDate || $0 > maxDate }
-                                    if !invalidDates.isEmpty {
-                                        invalidDateMessage = "Choose dates from start date to today"
-                                        showInvalidDateAlert = true
-                                        return // 不更新 selectedDates
-                                    }
-                                    selectedDates = Array(newDates)
-                                }),
-                                isBlankCalendar: true
-                            )
-                            .frame(height: 320)
-                            if !selectedDates.isEmpty {
-                                Text("Selected dates: \(selectedDates.map { formatDate($0) }.joined(separator: ", "))")
-                                    .font(.footnote)
-                            }
-                        }
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 18)
-                                .fill(Color(.systemBackground))
-                                .shadow(color: Color(.black).opacity(0.06), radius: 6, x: 0, y: 2)
+                        HistoryCalendarSection(
+                            startFromDate: $startFromDate,
+                            selectedDates: $selectedDates,
+                            showInvalidDateAlert: $showInvalidDateAlert,
+                            invalidDateMessage: $invalidDateMessage
                         )
                         Spacer(minLength: 0)
                     }
@@ -115,9 +89,10 @@ struct AddActivityView: View {
                 }
                 // 固定底部的保存按钮
                 Button(action: {
+                    guard let selectedCategory = category else { return }
                     let activity = ActivityDataManager.shared.createActivity(
                         name: name,
-                        category: category,
+                        category: selectedCategory,
                         iconName: selectedEmoji,
                         optionalDetails: optionalDetails.isEmpty ? nil : optionalDetails,
                         createdDate: Date(),
@@ -137,7 +112,7 @@ struct AddActivityView: View {
                         .cornerRadius(10)
                         .padding(.horizontal)
                 }
-                .disabled(name.isEmpty || selectedDates.isEmpty)
+                .disabled(name.isEmpty || selectedDates.isEmpty || category == nil)
                 .padding(.bottom, 12)
             }
             .navigationTitle("Add Activity")
@@ -150,6 +125,57 @@ struct AddActivityView: View {
                 Alert(title: Text("Invalid Date"), message: Text(invalidDateMessage), dismissButton: .default(Text("OK")))
             }
         }
+    }
+    // 日期格式化辅助函数
+    func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy/MM/dd"
+        return formatter.string(from: date)
+    }
+}
+
+// 历史日历分组
+struct HistoryCalendarSection: View {
+    @Binding var startFromDate: Date
+    @Binding var selectedDates: [Date]
+    @Binding var showInvalidDateAlert: Bool
+    @Binding var invalidDateMessage: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            DatePicker("Start From", selection: $startFromDate, displayedComponents: .date)
+                .datePickerStyle(CompactDatePickerStyle())
+            Text("Choose history completion dates:")
+                .foregroundColor(.secondary)
+                .font(.footnote)
+            CalendarView(
+                isEditing: true,
+                pendingAddDates: Binding(get: { Set(selectedDates) }, set: { newDates in
+                    // 日期校验逻辑
+                    let minDate = Calendar.current.startOfDay(for: startFromDate)
+                    let maxDate = Calendar.current.startOfDay(for: Date())
+                    let invalidDates = newDates.filter { $0 < minDate || $0 > maxDate }
+                    if !invalidDates.isEmpty {
+                        invalidDateMessage = "Choose dates from start date to today"
+                        showInvalidDateAlert = true
+                        return // 不更新 selectedDates
+                    }
+                    selectedDates = Array(newDates)
+                }),
+                isBlankCalendar: true
+            )
+            .frame(height: 320)
+            if !selectedDates.isEmpty {
+                Text("Selected dates: \(selectedDates.map { formatDate($0) }.joined(separator: ", "))")
+                    .font(.footnote)
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color(.systemBackground))
+                .shadow(color: Color(.black).opacity(0.06), radius: 6, x: 0, y: 2)
+        )
     }
     // 日期格式化辅助函数
     func formatDate(_ date: Date) -> String {
