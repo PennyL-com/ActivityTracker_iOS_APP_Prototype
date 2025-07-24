@@ -9,11 +9,13 @@ struct DashboardView: View {
     @State private var selectedActivity: Activity? = nil // 当前选中的活动（用于查看详情）
     @State private var isSorting = false // 是否处于排序模式
     @State private var sortActivities: [Activity] = [] // 排序模式下的本地活动数组
+    @State private var showCalendarSheet = false
+    @State private var showCategoriesSheet = false
     let manager = ActivityDataManager.shared // 活动数据管理器单例实例
     
     // 使用 @FetchRequest 自动获取和监听 Core Data 数据
     @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Activity.sortOrder, ascending: true)],
+        sortDescriptors: [NSSortDescriptor(keyPath: \Activity.sortOrder, ascending: false)],
         animation: .default
     ) private var activities: FetchedResults<Activity>
     
@@ -36,21 +38,28 @@ struct DashboardView: View {
                     ActivityDetailView(activity: activity)
                 }
             }
+            .sheet(isPresented: $showCalendarSheet) {
+                CalendarView()
+            }
+            .sheet(isPresented: $showCategoriesSheet) {
+                CategoriesDashboardView()
+            }
             .background(Color(.systemGray6).ignoresSafeArea())
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     if isSorting {
-                        Button("保存") {
+                        Button("Save") {
                             saveSortOrder()
                         }
-                        .font(.caption)
+                        .font(.title3) // 字号更大
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink(destination: CalendarView()) {
+                    Button(action: { showCategoriesSheet = true }) {
                         Image(systemName: "calendar")
                             .font(.title2)
                     }
+                    .disabled(isSorting) // 排序模式下禁用
                 }
             }
         }
@@ -189,6 +198,7 @@ struct DashboardView: View {
                         Image(systemName: "plus")
                         Text(LocalizedStringKey("Add Activity"))
                     }
+                    .font(.title3)
                     .frame(maxWidth: .infinity)
                     .padding()
                     .background(Color.accentColor)

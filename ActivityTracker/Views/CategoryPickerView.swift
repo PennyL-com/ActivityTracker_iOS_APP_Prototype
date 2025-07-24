@@ -6,7 +6,10 @@ struct CategoryPickerView: View {
     @Binding var selection: Category?
     @State private var showAddCategory = false
     @State private var newCategoryName = ""
-    @State private var categories: [Category] = []
+    @FetchRequest(
+        entity: Category.entity(),
+        sortDescriptors: [NSSortDescriptor(keyPath: \Category.name, ascending: true)]
+    ) var categories: FetchedResults<Category>
     @State private var showEditCategory = false
     @State private var editingCategory: Category? = nil
     @State private var editingCategoryName: String = ""
@@ -17,10 +20,12 @@ struct CategoryPickerView: View {
                 // 其他已存在分类
                 ForEach(categories) { cat in
                     Text(cat.name ?? "-")
-                        .tag(cat)
+                        .tag(cat as Category?)
                 }
                 // “Custom Category”选项
-                Text("Custom Category").tag(nil as Category?)
+                Text("Add New Category")
+                    .foregroundColor(Color.accentColor)
+                    .tag(nil as Category?)
             }
             .tint(.black)
             .onChange(of: selection) { newValue in
@@ -35,7 +40,6 @@ struct CategoryPickerView: View {
                     onConfirm: {
                         guard !newCategoryName.trimmingCharacters(in: .whitespaces).isEmpty else { return }
                         let newCat = ActivityDataManager.shared.createCategory(name: newCategoryName)
-                        categories = ActivityDataManager.shared.fetchCategories()
                         selection = newCat
                         showAddCategory = false
                         newCategoryName = ""
@@ -48,10 +52,9 @@ struct CategoryPickerView: View {
             }
             .onAppear {
                 ActivityDataManager.shared.ensureDefaultCategories()
-                categories = ActivityDataManager.shared.fetchCategories()
                 if selection == nil {
                     // 默认选中 "Hobby"
-                    selection = categories.first(where: { $0.name == "Hobby" })
+                    selection = categories.first(where: { $0.name == "Uncategorized" })
                 }
             }
         }
@@ -62,7 +65,6 @@ struct CategoryPickerView: View {
                     if let cat = editingCategory, !editingCategoryName.trimmingCharacters(in: .whitespaces).isEmpty {
                         cat.name = editingCategoryName
                         ActivityDataManager.shared.save()
-                        categories = ActivityDataManager.shared.fetchCategories()
                         if selection?.objectID == cat.objectID {
                             selection = cat
                         }
@@ -87,16 +89,33 @@ struct AddCategorySheet: View {
     var onCancel: () -> Void
 
     var body: some View {
-        VStack(spacing: 20) {
-            Text("新建分类")
-                .font(.headline)
-            TextField("请输入分类名称", text: $newCategoryName)
+        VStack(spacing: 24) {
+            Text("Add New Category")
+                .font(.title2)
+                .fontWeight(.semibold)
+                .padding(.top, 8)
+                .frame(maxWidth: .infinity, alignment: .center) // 标题居中
+            TextField("Enter category name", text: $newCategoryName)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
-            Button("确定", action: onConfirm)
-            Button("取消", action: onCancel)
+                .padding(.horizontal)
+            HStack(spacing: 40) { // 按钮间距加大
+                Button("Cancel", action: onCancel)
+                    .buttonStyle(.bordered)
+                Button("Confirm", action: onConfirm)
+                    .buttonStyle(.borderedProminent)
+                    .disabled(newCategoryName.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+            .padding(.bottom, 8)
         }
         .padding()
+        .frame(maxWidth: 360)
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color(.systemBackground))
+                .shadow(color: Color(.black).opacity(0.06), radius: 6, x: 0, y: 2)
+        )
+        .padding(.horizontal)
+        .padding(.bottom, 8)
     }
 }
 

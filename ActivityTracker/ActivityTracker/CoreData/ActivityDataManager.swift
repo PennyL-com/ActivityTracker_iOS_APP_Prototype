@@ -41,6 +41,8 @@ class ActivityDataManager {
         activity.optionalDetails = optionalDetails
         activity.createdDate = createdDate
         activity.isCompleted = isCompleted
+        // 新增：为新建活动分配最大 sortOrder+1
+        activity.sortOrder = getMaxSortOrder() + 1
         save() // 保存到 Core Data
         return activity
     }
@@ -169,12 +171,42 @@ class ActivityDataManager {
 
     /// 确保默认分类存在
     func ensureDefaultCategories() {
-        let defaultNames = ["Hobby", "Health", "Pet", "Home", "Education"]
+        let defaultNames = ["Uncategorized", "Hobby", "Health", "Pet", "Home", "Education"]
         let existingNames = fetchCategories().compactMap { $0.name }
         for name in defaultNames where !existingNames.contains(name) {
             _ = createCategory(name: name)
         }
         save()
+    }
+
+    /// 获取当前所有活动的最大 sortOrder
+    func getMaxSortOrder() -> Int64 {
+        let request: NSFetchRequest<Activity> = Activity.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(key: "sortOrder", ascending: false)]
+        request.fetchLimit = 1
+        do {
+            let results = try context.fetch(request)
+            return results.first?.sortOrder ?? 0
+        } catch {
+            print("Fetch max sortOrder error: \(error)")
+            return 0
+        }
+    }
+
+    /// 获取 name 为 'Uncategorized' 的分类
+    /// - Parameter context: Core Data 上下文
+    /// - Returns: 如果存在则返回该分类，否则返回 nil
+    func fetchUncategorizedCategory(context: NSManagedObjectContext) -> Category? {
+        let request: NSFetchRequest<Category> = Category.fetchRequest()
+        request.predicate = NSPredicate(format: "name == %@", "Uncategorized")
+        request.fetchLimit = 1
+        do {
+            let results = try context.fetch(request)
+            return results.first
+        } catch {
+            print("Fetch Uncategorized Category Error: \(error)")
+            return nil
+        }
     }
 
     // MARK: - Save

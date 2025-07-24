@@ -57,6 +57,7 @@ struct ActivityDetailView: View {
                     saveEdits()
                 }) {
                     Text("Save")
+                        .font(.title3)
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(Color.accentColor)
@@ -74,6 +75,7 @@ struct ActivityDetailView: View {
                     Button("Cancel") {
                         isEditing = false
                     }
+                    .font(.title3)
                 } else {
                     Button("Edit") {
                         editedName = activity.name ?? ""
@@ -82,6 +84,7 @@ struct ActivityDetailView: View {
                         editedIconName = activity.iconName ?? ""
                         isEditing = true
                     }
+                    .font(.title3)
                     .foregroundColor(Color.accentColor)
                 }
             }

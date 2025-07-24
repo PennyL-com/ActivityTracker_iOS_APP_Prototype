@@ -22,6 +22,12 @@ struct AddActivityView: View {
         sortDescriptors: [NSSortDescriptor(keyPath: \Category.name, ascending: true)]
     ) var categories: FetchedResults<Category>
     var onSave: () -> Void
+    var defaultCategory: Category? = nil
+    
+    init(onSave: @escaping () -> Void, defaultCategory: Category? = nil) {
+        self.onSave = onSave
+        self._category = State(initialValue: defaultCategory)
+    }
     
     var body: some View {
         NavigationView {
@@ -105,6 +111,7 @@ struct AddActivityView: View {
                     presentationMode.wrappedValue.dismiss()
                 }) {
                     Text("Save")
+                        .font(.title3)
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(Color.accentColor)
@@ -112,13 +119,13 @@ struct AddActivityView: View {
                         .cornerRadius(10)
                         .padding(.horizontal)
                 }
-                .disabled(name.isEmpty || selectedDates.isEmpty || category == nil)
+                .disabled(name.isEmpty || category == nil)
                 .padding(.bottom, 12)
             }
             .navigationTitle("Add Activity")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") { presentationMode.wrappedValue.dismiss() }
+                    Button("Cancel") { presentationMode.wrappedValue.dismiss() }.font(.title3)
                 }
             }
             .alert(isPresented: $showInvalidDateAlert) {
