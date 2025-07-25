@@ -11,6 +11,9 @@ struct CategoryDetailView: View {
     @State private var isEditing = false // 编辑模式
     @State private var isSorting = false // 新增：排序模式
     @State private var sortActivities: [Activity] = [] // 新增：排序用本地数组
+    @State private var showDuplicateAlert = false // 新增：重名Alert
+    @State private var showEmptyAlert = false // 新增：空名Alert
+    @State private var editingName: String = "" // 新增：编辑中的名字
 
     // 该分类下所有活动的完成日期
     private var categoryCompletionDates: [Date] {
@@ -23,6 +26,30 @@ struct CategoryDetailView: View {
         }
         let dates: [Date] = allCompletions.compactMap { $0.completedDate }
         return dates
+    }
+
+    // 检查分类名是否重复（排除当前分类）
+    private func isDuplicateCategoryName(_ name: String) -> Bool {
+        let fetchRequest: NSFetchRequest<Category> = Category.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "name == %@ AND self != %@", name, category)
+        let count = (try? viewContext.count(for: fetchRequest)) ?? 0
+        return count > 0
+    }
+
+    // 新增：保存分类名时的校验逻辑
+    private func trySaveCategoryName(_ newName: String) {
+        let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            showEmptyAlert = true
+            return
+        }
+        if isDuplicateCategoryName(trimmed) {
+            showDuplicateAlert = true
+            return
+        }
+        category.name = trimmed
+        try? viewContext.save()
+        isEditing = false
     }
 
     private var activityListView: some View {
@@ -144,6 +171,7 @@ struct CategoryDetailView: View {
             sortDescriptors: [NSSortDescriptor(keyPath: \Activity.createdDate, ascending: false)],
             predicate: NSPredicate(format: "belongToCategory == %@", category)
         )
+        editingName = category.name ?? ""
     }
 
     var body: some View {
@@ -153,18 +181,12 @@ struct CategoryDetailView: View {
                 HStack {
                     if isEditing {
                         HStack(spacing: 8) {
-                            TextField("Tap in category name", text: Binding(
-                                get: { category.name ?? "" },
-                                set: { newValue in
-                                    category.name = newValue
-                                    try? viewContext.save()
-                                })
-                            )
-                            .font(.system(size: 20, weight: .bold))
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 12)
-                            .background(Color(.systemGray5))
-                            .cornerRadius(8)
+                            TextField("Tap in category name", text: $editingName)
+                                .font(.system(size: 20, weight: .bold))
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 12)
+                                .background(Color(.systemGray5))
+                                .cornerRadius(8)
                             Image(systemName: "pencil")
                                 .foregroundColor(.accentColor)
                         }
@@ -174,7 +196,12 @@ struct CategoryDetailView: View {
                     }
                     Spacer()
                     Button(isEditing ? "Save" : "Edit") {
-                        isEditing.toggle()
+                        if isEditing {
+                            trySaveCategoryName(editingName)
+                        } else {
+                            editingName = category.name ?? ""
+                            isEditing = true
+                        }
                     }
                     .disabled((category.name ?? "") == "Uncategorized") // Uncategorized分类禁用按钮
                     .padding(.trailing, 20)
@@ -210,6 +237,14 @@ struct CategoryDetailView: View {
                 },
                 defaultCategory: category // 传递当前分类
             )
+        }
+        // 新增：重名Alert
+        .alert("分类名已存在", isPresented: $showDuplicateAlert) {
+            Button("确定", role: .cancel) { }
+        }
+        // 新增：空名Alert
+        .alert("分类名不能为空或全空格", isPresented: $showEmptyAlert) {
+            Button("确定", role: .cancel) { }
         }
     }
 }

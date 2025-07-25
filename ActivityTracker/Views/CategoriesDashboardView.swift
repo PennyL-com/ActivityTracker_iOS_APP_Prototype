@@ -12,6 +12,7 @@ struct CategoriesDashboardView: View {
     @State private var selectedCategory: Category? = nil
     @State private var showCategoryDetail = false
     @State private var isDeleteMode = false // 新增：控制删除模式
+    @State private var showNilCategoryDetail = false // 新增：控制未分类弹窗
     
     // 获取所有完成记录的日期
     private var allCompletionDates: [Date] {
@@ -73,6 +74,28 @@ struct CategoriesDashboardView: View {
                 // 分类按钮网格区域可滚动
                 ScrollView {
                     LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
+                        // “未分类”按钮
+                        ZStack(alignment: .topTrailing) {
+                            Button(action: {
+                                if !isDeleteMode {
+                                    showNilCategoryDetail = true
+                                }
+                            }) {
+                                Text("Uncategorized")
+                                    .font(.body)
+                                    .foregroundColor(.primary)
+                                    .frame(maxWidth: .infinity, minHeight: 44)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 8)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 18)
+                                            .fill(Color(.systemBackground))
+                                            .shadow(color: Color(.black).opacity(0.06), radius: 6, x: 0, y: 2)
+                                    )
+                            }
+                        }
+                        .padding(6)
+                        // 现有分类按钮
                         ForEach(categories) { category in
                             ZStack(alignment: .topTrailing) {
                                 Button(action: {
@@ -128,6 +151,7 @@ struct CategoriesDashboardView: View {
         .sheet(isPresented: $showAddCategory) {
             AddCategorySheet(
                 newCategoryName: $newCategoryName,
+                categories: categories,
                 onConfirm: {
                     if !newCategoryName.trimmingCharacters(in: .whitespaces).isEmpty {
                         _ = ActivityDataManager.shared.createCategory(name: newCategoryName)
@@ -142,10 +166,13 @@ struct CategoriesDashboardView: View {
             )
         }
         .onAppear {
-            ActivityDataManager.shared.ensureDefaultCategories()
+            // ActivityDataManager.shared.ensureDefaultCategories()
         }
         .sheet(item: $selectedCategory) { category in
             CategoryDetailView(category: category)
+        }
+        .sheet(isPresented: $showNilCategoryDetail) {
+            NilCategoryActivitiesView()
         }
     }
 }

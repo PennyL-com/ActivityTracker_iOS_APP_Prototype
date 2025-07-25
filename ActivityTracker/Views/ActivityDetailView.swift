@@ -202,7 +202,7 @@ struct ActivityInfoSection: View {
                     CategoryPickerView(selection: $editedCategory)
                         .pickerStyle(MenuPickerStyle())
                 } else {
-                    Text(activity.belongToCategory?.name ?? "-")
+                    Text(activity.belongToCategory?.name ?? "Uncategorized")
                 }
             }
             if isEditing {

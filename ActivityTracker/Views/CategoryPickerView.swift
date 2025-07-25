@@ -13,6 +13,8 @@ struct CategoryPickerView: View {
     @State private var showEditCategory = false
     @State private var editingCategory: Category? = nil
     @State private var editingCategoryName: String = ""
+    @State private var showDuplicateAlert = false
+    @State private var showEditDuplicateAlert = false
     
     var body: some View {
         VStack {
@@ -37,8 +39,8 @@ struct CategoryPickerView: View {
             .sheet(isPresented: $showAddCategory) {
                 AddCategorySheet(
                     newCategoryName: $newCategoryName,
+                    categories: categories,
                     onConfirm: {
-                        guard !newCategoryName.trimmingCharacters(in: .whitespaces).isEmpty else { return }
                         let newCat = ActivityDataManager.shared.createCategory(name: newCategoryName)
                         selection = newCat
                         showAddCategory = false
@@ -51,16 +53,18 @@ struct CategoryPickerView: View {
                 )
             }
             .onAppear {
-                ActivityDataManager.shared.ensureDefaultCategories()
+                // ActivityDataManager.shared.ensureDefaultCategories()
                 if selection == nil {
                     // 默认选中 "Hobby"
-                    selection = categories.first(where: { $0.name == "Uncategorized" })
+                    selection = categories.first(where: { $0.name == "Hobby" })
                 }
             }
         }
         .sheet(isPresented: $showEditCategory) {
             EditCategorySheet(
                 editingCategoryName: $editingCategoryName,
+                categories: categories,
+                editingCategory: editingCategory,
                 onSave: {
                     if let cat = editingCategory, !editingCategoryName.trimmingCharacters(in: .whitespaces).isEmpty {
                         cat.name = editingCategoryName
@@ -85,8 +89,10 @@ struct CategoryPickerView: View {
 
 struct AddCategorySheet: View {
     @Binding var newCategoryName: String
+    var categories: FetchedResults<Category>
     var onConfirm: () -> Void
     var onCancel: () -> Void
+    @State private var showDuplicateAlert = false
 
     var body: some View {
         VStack(spacing: 24) {
@@ -94,16 +100,24 @@ struct AddCategorySheet: View {
                 .font(.title2)
                 .fontWeight(.semibold)
                 .padding(.top, 8)
-                .frame(maxWidth: .infinity, alignment: .center) // 标题居中
+                .frame(maxWidth: .infinity, alignment: .center)
             TextField("Enter category name", text: $newCategoryName)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding(.horizontal)
-            HStack(spacing: 40) { // 按钮间距加大
+            HStack(spacing: 40) {
                 Button("Cancel", action: onCancel)
                     .buttonStyle(.bordered)
-                Button("Confirm", action: onConfirm)
-                    .buttonStyle(.borderedProminent)
-                    .disabled(newCategoryName.trimmingCharacters(in: .whitespaces).isEmpty)
+                Button("Confirm") {
+                    let trimmed = newCategoryName.trimmingCharacters(in: .whitespaces)
+                    guard !trimmed.isEmpty else { return }
+                    if categories.contains(where: { ($0.name ?? "").trimmingCharacters(in: .whitespaces) == trimmed }) {
+                        showDuplicateAlert = true
+                        return
+                    }
+                    onConfirm()
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(newCategoryName.trimmingCharacters(in: .whitespaces).isEmpty)
             }
             .padding(.bottom, 8)
         }
@@ -116,13 +130,20 @@ struct AddCategorySheet: View {
         )
         .padding(.horizontal)
         .padding(.bottom, 8)
+        .alert(isPresented: $showDuplicateAlert) {
+            Alert(title: Text("已存在同名分类"), message: Text("请使用其他名称。"), dismissButton: .default(Text("确定")))
+        }
     }
 }
 
+
 struct EditCategorySheet: View {
     @Binding var editingCategoryName: String
+    var categories: FetchedResults<Category>
+    var editingCategory: Category?
     var onSave: () -> Void
     var onCancel: () -> Void
+    @State private var showDuplicateAlert = false
 
     var body: some View {
         VStack(spacing: 20) {
@@ -131,9 +152,20 @@ struct EditCategorySheet: View {
             TextField("请输入新名称", text: $editingCategoryName)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding()
-            Button("保存", action: onSave)
+            Button("保存") {
+                let trimmed = editingCategoryName.trimmingCharacters(in: .whitespaces)
+                guard let cat = editingCategory, !trimmed.isEmpty else { return }
+                if categories.contains(where: { ($0.name ?? "").trimmingCharacters(in: .whitespaces) == trimmed && $0.objectID != cat.objectID }) {
+                    showDuplicateAlert = true
+                    return
+                }
+                onSave()
+            }
             Button("取消", action: onCancel)
         }
         .padding()
+        .alert(isPresented: $showDuplicateAlert) {
+            Alert(title: Text("已存在同名分类"), message: Text("请使用其他名称。"), dismissButton: .default(Text("确定")))
+        }
     }
 }

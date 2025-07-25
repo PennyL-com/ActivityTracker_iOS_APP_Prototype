@@ -13,6 +13,7 @@
     </entity>
     <entity name="Category" representedClassName="Category" syncable="YES" codeGenerationType="class">
         <attribute name="categoryId" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="defaultKey" optional="YES" attributeType="String"/>
         <attribute name="name" attributeType="String"/>
         <relationship name="hasActivities" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Activity" inverseName="belongToCategory" inverseEntity="Activity"/>
     </entity>

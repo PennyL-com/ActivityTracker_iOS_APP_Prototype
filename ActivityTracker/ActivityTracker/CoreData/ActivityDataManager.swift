@@ -41,8 +41,6 @@ class ActivityDataManager {
         activity.optionalDetails = optionalDetails
         activity.createdDate = createdDate
         activity.isCompleted = isCompleted
-        // 新增：为新建活动分配最大 sortOrder+1
-        activity.sortOrder = getMaxSortOrder() + 1
         save() // 保存到 Core Data
         return activity
     }
@@ -78,6 +76,19 @@ class ActivityDataManager {
             return results
         } catch {
             print("Fetch Activities for Category Error: \(error)")
+            return []
+        }
+    }
+
+    /// 获取所有未分类（belongToCategory为nil）的活动
+    func fetchActivitiesWithNilCategory() -> [Activity] {
+        let request: NSFetchRequest<Activity> = Activity.fetchRequest()
+        request.predicate = NSPredicate(format: "belongToCategory == nil")
+        request.sortDescriptors = [NSSortDescriptor(key: "createdDate", ascending: false)]
+        do {
+            return try context.fetch(request)
+        } catch {
+            print("Fetch Activities With Nil Category Error: \(error)")
             return []
         }
     }
@@ -141,10 +152,11 @@ class ActivityDataManager {
     /// 创建新的分类
     /// - Parameter name: 分类名称
     /// - Returns: 新创建的 Category 实体
-    func createCategory(name: String) -> Category {
+    func createCategory(name: String, defaultKey: String? = nil) -> Category {
         let category = Category(context: context)
         category.categoryId = UUID()
         category.name = name
+        category.defaultKey = defaultKey
         save()
         return category
     }
@@ -167,30 +179,6 @@ class ActivityDataManager {
     func deleteCategory(_ category: Category) {
         context.delete(category)
         save()
-    }
-
-    /// 确保默认分类存在
-    func ensureDefaultCategories() {
-        let defaultNames = ["Uncategorized", "Hobby", "Health", "Pet", "Home", "Education"]
-        let existingNames = fetchCategories().compactMap { $0.name }
-        for name in defaultNames where !existingNames.contains(name) {
-            _ = createCategory(name: name)
-        }
-        save()
-    }
-
-    /// 获取当前所有活动的最大 sortOrder
-    func getMaxSortOrder() -> Int64 {
-        let request: NSFetchRequest<Activity> = Activity.fetchRequest()
-        request.sortDescriptors = [NSSortDescriptor(key: "sortOrder", ascending: false)]
-        request.fetchLimit = 1
-        do {
-            let results = try context.fetch(request)
-            return results.first?.sortOrder ?? 0
-        } catch {
-            print("Fetch max sortOrder error: \(error)")
-            return 0
-        }
     }
 
     /// 获取 name 为 'Uncategorized' 的分类
