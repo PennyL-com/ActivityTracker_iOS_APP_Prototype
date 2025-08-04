@@ -179,8 +179,11 @@ struct DashboardView: View {
     }
 
     private func saveSortOrder() {
+        // 修复排序逻辑：由于使用降序排列，需要反转索引值
+        // 这样第一个项目会得到最大的sortOrder值，在降序排列中会显示在最前面
         for (index, activity) in sortActivities.enumerated() {
-            activity.setValue(Int64(index), forKey: "sortOrder")
+            let sortOrder = Int64(sortActivities.count - 1 - index)
+            activity.setValue(sortOrder, forKey: "sortOrder")
         }
         do {
             try viewContext.save()

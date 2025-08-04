@@ -1,5 +1,8 @@
 import Foundation
 import CoreData
+#if canImport(WidgetKit)
+import WidgetKit
+#endif
 
 /// 活动数据管理器 - 负责处理所有与活动相关的 Core Data 操作
 class ActivityDataManager {
@@ -41,21 +44,27 @@ class ActivityDataManager {
         activity.optionalDetails = optionalDetails
         activity.createdDate = createdDate
         activity.isCompleted = isCompleted
+        
+        // 设置sortOrder为新活动的最大值+1，确保新活动显示在列表顶部
+        let currentActivities = fetchActivities()
+        let maxSortOrder = currentActivities.map { $0.sortOrder }.max() ?? -1
+        activity.sortOrder = maxSortOrder + 1
+        
         save() // 保存到 Core Data
         return activity
     }
 
-    /// 获取所有活动记录，按创建日期降序排列
+    /// 获取所有活动记录，按sortOrder降序排列（与DashboardView保持一致）
     /// - Returns: 活动数组，如果出错则返回空数组
     func fetchActivities() -> [Activity] {
         let request: NSFetchRequest<Activity> = Activity.fetchRequest()
-        // 按创建日期降序排列，最新的活动在前
-        request.sortDescriptors = [NSSortDescriptor(key: "createdDate", ascending: false)]
+        // 按sortOrder降序排列，与DashboardView保持一致
+        request.sortDescriptors = [NSSortDescriptor(key: "sortOrder", ascending: false)]
         do {
             let results = try context.fetch(request)
             print("ActivityDataManager fetched \(results.count) activities")
             for (index, activity) in results.enumerated() {
-                print("  \(index): \(activity.name ?? "unnamed") - \(activity.createdDate ?? Date())")
+                print("  \(index): \(activity.name ?? "unnamed") - sortOrder: \(activity.sortOrder)")
             }
             return results
         } catch {
@@ -64,13 +73,13 @@ class ActivityDataManager {
         }
     }
 
-    /// 获取指定分类下的所有活动记录，按创建日期降序排列
+    /// 获取指定分类下的所有活动记录，按sortOrder降序排列
     /// - Parameter category: 分类实体
     /// - Returns: 活动数组
     func fetchActivities(for category: Category) -> [Activity] {
         let request: NSFetchRequest<Activity> = Activity.fetchRequest()
         request.predicate = NSPredicate(format: "belongToCategory == %@", category)
-        request.sortDescriptors = [NSSortDescriptor(key: "createdDate", ascending: false)]
+        request.sortDescriptors = [NSSortDescriptor(key: "sortOrder", ascending: false)]
         do {
             let results = try context.fetch(request)
             return results
@@ -80,11 +89,11 @@ class ActivityDataManager {
         }
     }
 
-    /// 获取所有未分类（belongToCategory为nil）的活动
+    /// 获取所有未分类（belongToCategory为nil）的活动，按sortOrder降序排列
     func fetchActivitiesWithNilCategory() -> [Activity] {
         let request: NSFetchRequest<Activity> = Activity.fetchRequest()
         request.predicate = NSPredicate(format: "belongToCategory == nil")
-        request.sortDescriptors = [NSSortDescriptor(key: "createdDate", ascending: false)]
+        request.sortDescriptors = [NSSortDescriptor(key: "sortOrder", ascending: false)]
         do {
             return try context.fetch(request)
         } catch {
@@ -205,11 +214,22 @@ class ActivityDataManager {
             do {
                 try context.save() // 尝试保存到持久化存储
                 print("Core Data saved successfully")
+                
+                // 通知小组件数据已更新
+                refreshWidgetTimeline()
             } catch {
                 print("Save Error: \(error)") // 打印保存错误信息
             }
         } else {
             print("No changes to save")
         }
+    }
+    
+    /// 刷新小组件时间线
+    private func refreshWidgetTimeline() {
+        #if canImport(WidgetKit)
+        WidgetCenter.shared.reloadAllTimelines()
+        print("Widget timeline refreshed")
+        #endif
     }
 } 

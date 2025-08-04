@@ -16,7 +16,7 @@ struct CategoryPickerView: View {
     @State private var showDuplicateAlert = false
     @State private var showEditDuplicateAlert = false
     
-    var body: some View {
+        var body: some View {
         VStack {
             Picker("选择分类", selection: $selection) {
                 // 其他已存在分类
@@ -33,7 +33,7 @@ struct CategoryPickerView: View {
             .onChange(of: selection) { newValue in
                 print("Picker changed: \(String(describing: newValue))")
                 if newValue == nil {
-                    showAddCategory = true
+                    showAddCategory = true // Add New Category 的值是nil
                 }
             }
             .sheet(isPresented: $showAddCategory) {
@@ -44,7 +44,7 @@ struct CategoryPickerView: View {
                         let newCat = ActivityDataManager.shared.createCategory(name: newCategoryName)
                         selection = newCat
                         showAddCategory = false
-                        newCategoryName = ""
+                        newCategoryName = "" // 清空输入框方便下次输入
                     },
                     onCancel: {
                         showAddCategory = false
@@ -55,34 +55,10 @@ struct CategoryPickerView: View {
             .onAppear {
                 // ActivityDataManager.shared.ensureDefaultCategories()
                 if selection == nil {
-                    // 默认选中 "Hobby"
-                    selection = categories.first(where: { $0.name == "Hobby" })
+                    // 默认选中 "Uncategorized"
+                    selection = categories.first(where: { $0.name == "Uncategorized" })
                 }
             }
-        }
-        .sheet(isPresented: $showEditCategory) {
-            EditCategorySheet(
-                editingCategoryName: $editingCategoryName,
-                categories: categories,
-                editingCategory: editingCategory,
-                onSave: {
-                    if let cat = editingCategory, !editingCategoryName.trimmingCharacters(in: .whitespaces).isEmpty {
-                        cat.name = editingCategoryName
-                        ActivityDataManager.shared.save()
-                        if selection?.objectID == cat.objectID {
-                            selection = cat
-                        }
-                    }
-                    showEditCategory = false
-                    editingCategory = nil
-                    editingCategoryName = ""
-                },
-                onCancel: {
-                    showEditCategory = false
-                    editingCategory = nil
-                    editingCategoryName = ""
-                }
-            )
         }
     }
 }
@@ -130,40 +106,6 @@ struct AddCategorySheet: View {
         )
         .padding(.horizontal)
         .padding(.bottom, 8)
-        .alert(isPresented: $showDuplicateAlert) {
-            Alert(title: Text("已存在同名分类"), message: Text("请使用其他名称。"), dismissButton: .default(Text("确定")))
-        }
-    }
-}
-
-
-struct EditCategorySheet: View {
-    @Binding var editingCategoryName: String
-    var categories: FetchedResults<Category>
-    var editingCategory: Category?
-    var onSave: () -> Void
-    var onCancel: () -> Void
-    @State private var showDuplicateAlert = false
-
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("编辑分类名称")
-                .font(.headline)
-            TextField("请输入新名称", text: $editingCategoryName)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
-            Button("保存") {
-                let trimmed = editingCategoryName.trimmingCharacters(in: .whitespaces)
-                guard let cat = editingCategory, !trimmed.isEmpty else { return }
-                if categories.contains(where: { ($0.name ?? "").trimmingCharacters(in: .whitespaces) == trimmed && $0.objectID != cat.objectID }) {
-                    showDuplicateAlert = true
-                    return
-                }
-                onSave()
-            }
-            Button("取消", action: onCancel)
-        }
-        .padding()
         .alert(isPresented: $showDuplicateAlert) {
             Alert(title: Text("已存在同名分类"), message: Text("请使用其他名称。"), dismissButton: .default(Text("确定")))
         }

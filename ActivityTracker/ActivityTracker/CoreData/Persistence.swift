@@ -49,8 +49,15 @@ struct PersistenceController {
             // 内存存储模式：将存储 URL 设置为 /dev/null
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
         } else {
-            // 使用应用沙盒的默认存储位置
-            print("Using default app sandbox storage")
+            // 使用 App Group 共享存储位置
+            let groupID = "group.com.penny.activitytracker"
+            if let groupURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID) {
+                let storeURL = groupURL.appendingPathComponent("ActivityTracker.sqlite")
+                container.persistentStoreDescriptions.first!.url = storeURL
+                print("Using App Group storage: \(storeURL)")
+            } else {
+                print("App Group not available, using default storage")
+            }
         }
 
         // 加载持久化存储

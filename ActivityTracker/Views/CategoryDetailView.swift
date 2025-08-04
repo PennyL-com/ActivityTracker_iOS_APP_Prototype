@@ -67,19 +67,32 @@ struct CategoryDetailView: View {
                 .disabled(isEditing) // 编辑状态下禁用添加按钮
             }
             Group {
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: 12) {
-                        ForEach(activities) { activity in
-                            NavigationLink(
-                                destination: ActivityDetailView(activity: activity),
-                                label: {
-                                    activityCardView(for: activity, showSort: true)
-                                }
-                            )
-                            .disabled(isEditing) // 编辑模式下禁用跳转
+                if isSorting {
+                    List {
+                        ForEach(sortActivities, id: \.id) { activity in
+                            activityCardView(for: activity, showSort: false)
+                                .listRowSeparator(.hidden)
+                                .listRowBackground(Color.clear)
                         }
+                        .onMove(perform: moveActivity)
                     }
-                    .padding(.vertical, 8)
+                    .listStyle(.plain)
+                    .environment(\.editMode, .constant(.active))
+                } else {
+                    ScrollView(.vertical, showsIndicators: false) {
+                        VStack(spacing: 12) {
+                            ForEach(activities) { activity in
+                                NavigationLink(
+                                    destination: ActivityDetailView(activity: activity),
+                                    label: {
+                                        activityCardView(for: activity, showSort: true)
+                                    }
+                                )
+                                .disabled(isEditing) // 编辑模式下禁用跳转
+                            }
+                        }
+                        .padding(.vertical, 8)
+                    }
                 }
             }
             .onAppear {
@@ -163,12 +176,31 @@ struct CategoryDetailView: View {
         }
     }
 
+    private func moveActivity(from source: IndexSet, to destination: Int) {
+        sortActivities.move(fromOffsets: source, toOffset: destination)
+    }
+
+    private func saveSortOrder() {
+        // 修复排序逻辑：由于使用降序排列，需要反转索引值
+        // 这样第一个项目会得到最大的sortOrder值，在降序排列中会显示在最前面
+        for (index, activity) in sortActivities.enumerated() {
+            let sortOrder = Int64(sortActivities.count - 1 - index)
+            activity.setValue(sortOrder, forKey: "sortOrder")
+        }
+        do {
+            try viewContext.save()
+            isSorting = false
+        } catch {
+            print("保存排序失败: \(error)")
+        }
+    }
+
     init(category: Category) {
         self.category = category
         // 初始化 FetchRequest，监听该分类下的活动
         _activities = FetchRequest(
             entity: Activity.entity(),
-            sortDescriptors: [NSSortDescriptor(keyPath: \Activity.createdDate, ascending: false)],
+            sortDescriptors: [NSSortDescriptor(keyPath: \Activity.sortOrder, ascending: false)],
             predicate: NSPredicate(format: "belongToCategory == %@", category)
         )
         editingName = category.name ?? ""
@@ -230,6 +262,16 @@ struct CategoryDetailView: View {
         }
         .navigationTitle(category.name ?? "分类详情")
         .background(Color(.systemGray6).ignoresSafeArea())
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                if isSorting {
+                    Button("Save") {
+                        saveSortOrder()
+                    }
+                    .font(.title3)
+                }
+            }
+        }
         .sheet(isPresented: $showAddActivity) {
             AddActivityView(
                 onSave: {

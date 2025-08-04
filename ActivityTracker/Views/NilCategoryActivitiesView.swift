@@ -9,7 +9,14 @@ struct NilCategoryActivitiesView: View {
         guard let index = activities.firstIndex(of: activity) else { return }
         activities.remove(at: index)
         activities.insert(activity, at: 0)
-        // 这里可以根据需要同步到CoreData的sortOrder字段
+        
+        // 同步到CoreData的sortOrder字段
+        // 获取当前所有未分类活动的最大sortOrder值
+        let maxSortOrder = activities.map { $0.sortOrder }.max() ?? -1
+        activity.sortOrder = maxSortOrder + 1
+        
+        // 保存到Core Data
+        ActivityDataManager.shared.save()
     }
 
     // 删除活动
