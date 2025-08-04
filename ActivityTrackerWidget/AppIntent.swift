@@ -27,8 +27,8 @@ struct CompleteActivityIntent: AppIntent {
         let success = WidgetDataManager.shared.markActivityComplete(activityID: UUID(uuidString: activityID) ?? UUID())
         
         if success {
-            // 刷新小组件时间线
-            WidgetCenter.shared.reloadTimelines(ofKind: "ActivityTrackerWidget")
+            // 强制刷新小组件时间线，确保状态立即更新
+            WidgetDataManager.shared.forceRefreshWidget()
             return .result()
         } else {
             throw Error.failedToComplete
@@ -62,8 +62,8 @@ struct NextPageIntent: AppIntent {
             let newPage = currentPage + 1
             defaults?.set(newPage, forKey: "widget_current_page")
             
-            // 刷新小组件时间线
-            WidgetCenter.shared.reloadTimelines(ofKind: "ActivityTrackerWidget")
+            // 强制刷新小组件时间线
+            WidgetDataManager.shared.forceRefreshWidget()
         }
         
         return .result()
@@ -85,8 +85,8 @@ struct PreviousPageIntent: AppIntent {
             let newPage = currentPage - 1
             defaults?.set(newPage, forKey: "widget_current_page")
             
-            // 刷新小组件时间线
-            WidgetCenter.shared.reloadTimelines(ofKind: "ActivityTrackerWidget")
+            // 强制刷新小组件时间线
+            WidgetDataManager.shared.forceRefreshWidget()
         }
         
         return .result()

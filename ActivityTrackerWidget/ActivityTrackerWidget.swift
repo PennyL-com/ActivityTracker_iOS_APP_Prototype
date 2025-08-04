@@ -48,9 +48,26 @@ struct ActivityProvider: TimelineProvider {
         let totalPages = defaults?.integer(forKey: "widget_total_pages") ?? 1
         
         let entry = ActivityEntry(date: Date(), activities: activities, currentPage: currentPage, totalPages: totalPages)
-        // 每小时刷新
-        let nextUpdate = Calendar.current.date(byAdding: .hour, value: 1, to: Date())!
-        completion(Timeline(entries: [entry], policy: .after(nextUpdate)))
+        
+        // 创建多个时间点，确保小组件能够及时更新
+        var entries: [ActivityEntry] = [entry]
+        
+        // 添加未来几个时间点，确保数据变化时能及时刷新
+        for i in 1...5 {
+            if let futureDate = Calendar.current.date(byAdding: .minute, value: i * 5, to: Date()) {
+                let futureEntry = ActivityEntry(
+                    date: futureDate,
+                    activities: activities,
+                    currentPage: currentPage,
+                    totalPages: totalPages
+                )
+                entries.append(futureEntry)
+            }
+        }
+        
+        // 设置更频繁的刷新策略：每5分钟刷新一次
+        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 5, to: Date())!
+        completion(Timeline(entries: entries, policy: .after(nextUpdate)))
     }
 }
 

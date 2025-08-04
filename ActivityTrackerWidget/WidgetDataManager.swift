@@ -17,6 +17,7 @@ class WidgetDataManager {
     private init() {
         setupCoreDataContainer()
         initializePageInfo()
+        setupDataChangeObserver()
     }
     
     // MARK: - Core Data Setup
@@ -136,6 +137,9 @@ class WidgetDataManager {
     /// - Parameter isLarge: 是否为大尺寸Widget
     /// - Returns: 活动模型数组
     func fetchActivitiesForWidgetSize(isLarge: Bool) -> [ActivityModel] {
+        // 检查日期变化
+        checkAndUpdateWidgetForDateChange()
+        
         guard let container = container else {
             print("[WidgetDataManager] Container not available")
             return []
@@ -272,8 +276,8 @@ class WidgetDataManager {
                     try context.save()
                     print("[WidgetDataManager] Successfully marked activity complete: \(activity.name ?? "")")
                     
-                    // 刷新小组件时间线
-                    refreshWidgetTimeline()
+                    // 强制刷新小组件时间线，确保状态立即更新
+                    forceRefreshWidget()
                     return true
                 } else {
                     print("[WidgetDataManager] Activity already completed today: \(activity.name ?? "")")
@@ -297,6 +301,12 @@ class WidgetDataManager {
         print("[WidgetDataManager] Widget timeline refreshed")
     }
     
+    /// 强制刷新小组件时间线（用于重要数据变化）
+    func forceRefreshWidget() {
+        WidgetCenter.shared.reloadAllTimelines()
+        print("[WidgetDataManager] Widget timeline force refreshed")
+    }
+    
     /// 监听数据变化并自动刷新小组件
     func setupDataChangeObserver() {
         guard let container = container else { return }
@@ -308,6 +318,23 @@ class WidgetDataManager {
             queue: .main
         ) { _ in
             self.refreshWidgetTimeline()
+        }
+        
+        // 监听应用状态变化，确保日期变化时能及时更新
+        // 注意：在小组件扩展中，UIApplication不可用，所以这里只监听Core Data变化
+        // 日期变化检查将在每次获取数据时进行
+    }
+    
+    /// 检查日期变化并更新小组件
+    private func checkAndUpdateWidgetForDateChange() {
+        let defaults = UserDefaults(suiteName: groupID)
+        let lastUpdateDate = defaults?.object(forKey: "widget_last_update_date") as? Date ?? Date.distantPast
+        
+        if !Calendar.current.isDateInToday(lastUpdateDate) {
+            // 日期已变化，更新小组件
+            defaults?.set(Date(), forKey: "widget_last_update_date")
+            forceRefreshWidget()
+            print("[WidgetDataManager] Date changed, widget updated")
         }
     }
     

@@ -45,6 +45,10 @@ struct DashboardView: View {
                 CategoriesDashboardView()
             }
             .background(Color(.systemGray6).ignoresSafeArea())
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+                // 当应用变为活跃状态时，检查是否需要更新小组件
+                checkAndUpdateWidgetForDateChange()
+            }
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     if isSorting {
@@ -151,6 +155,8 @@ struct DashboardView: View {
                         newCompletion.activity = activity
                         do {
                             try viewContext.save()
+                            // 强制刷新小组件，确保打钩状态立即同步
+                            manager.forceRefreshWidget()
                         } catch {
                             print("保存完成记录失败: \(error)")
                         }
@@ -187,6 +193,8 @@ struct DashboardView: View {
         }
         do {
             try viewContext.save()
+            // 强制刷新小组件，确保排序变化立即同步
+            manager.forceRefreshWidget()
             isSorting = false
         } catch {
             print("保存排序失败: \(error)")
@@ -210,6 +218,19 @@ struct DashboardView: View {
                 }
                 .padding([.horizontal, .bottom])
             }
+        }
+    }
+    
+    /// 检查日期变化并更新小组件
+    private func checkAndUpdateWidgetForDateChange() {
+        let defaults = UserDefaults(suiteName: "group.com.penny.activitytracker")
+        let lastUpdateDate = defaults?.object(forKey: "app_last_update_date") as? Date ?? Date.distantPast
+        
+        if !Calendar.current.isDateInToday(lastUpdateDate) {
+            // 日期已变化，更新小组件
+            defaults?.set(Date(), forKey: "app_last_update_date")
+            manager.forceRefreshWidget()
+            print("Date changed, widget updated from dashboard")
         }
     }
 }

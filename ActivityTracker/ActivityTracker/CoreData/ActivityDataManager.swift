@@ -232,4 +232,12 @@ class ActivityDataManager {
         print("Widget timeline refreshed")
         #endif
     }
+    
+    /// 强制刷新小组件时间线（用于重要数据变化）
+    func forceRefreshWidget() {
+        #if canImport(WidgetKit)
+        WidgetCenter.shared.reloadAllTimelines()
+        print("Widget timeline force refreshed")
+        #endif
+    }
 } 
