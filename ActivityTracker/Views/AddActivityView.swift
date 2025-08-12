@@ -9,13 +9,8 @@ struct AddActivityView: View {
     @State private var optionalDetails = ""
     @State private var selectedEmoji: String = ""
     @State private var showEmojiPicker = false
-    // 新增：起始日期和多选日历相关状态
-    @State private var startFromDate = Date()
-    @State private var showCalendarInline = false
+    // 多选日历相关状态
     @State private var selectedDates: [Date] = []
-    // 新增：非法日期弹窗相关状态
-    @State private var showInvalidDateAlert = false
-    @State private var invalidDateMessage = ""
     
     @FetchRequest(
         entity: Category.entity(),
@@ -84,10 +79,7 @@ struct AddActivityView: View {
 
                         // 历史日历分组
                         HistoryCalendarSection(
-                            startFromDate: $startFromDate,
-                            selectedDates: $selectedDates,
-                            showInvalidDateAlert: $showInvalidDateAlert,
-                            invalidDateMessage: $invalidDateMessage
+                            selectedDates: $selectedDates
                         )
                         Spacer(minLength: 0)
                     }
@@ -119,7 +111,7 @@ struct AddActivityView: View {
                         .cornerRadius(10)
                         .padding(.horizontal)
                 }
-                .disabled(name.isEmpty || category == nil)
+                .disabled(name.isEmpty || category == nil || selectedEmoji.isEmpty)
                 .padding(.bottom, 12)
             }
             .navigationTitle("Add Activity")
@@ -127,9 +119,6 @@ struct AddActivityView: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") { presentationMode.wrappedValue.dismiss() }.font(.title3)
                 }
-            }
-            .alert(isPresented: $showInvalidDateAlert) {
-                Alert(title: Text("Invalid Date"), message: Text(invalidDateMessage), dismissButton: .default(Text("OK")))
             }
         }
     }
@@ -143,31 +132,26 @@ struct AddActivityView: View {
 
 // 历史日历分组
 struct HistoryCalendarSection: View {
-    @Binding var startFromDate: Date
     @Binding var selectedDates: [Date]
-    @Binding var showInvalidDateAlert: Bool
-    @Binding var invalidDateMessage: String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            DatePicker("Start From", selection: $startFromDate, displayedComponents: .date)
-                .datePickerStyle(CompactDatePickerStyle())
             Text("Choose history completion dates:")
                 .foregroundColor(.secondary)
                 .font(.footnote)
             CalendarView(
                 isEditing: true,
                 pendingAddDates: Binding(get: { Set(selectedDates) }, set: { newDates in
-                    // 日期校验逻辑
-                    let minDate = Calendar.current.startOfDay(for: startFromDate)
+                    // 简化的日期校验：只检查不能选择未来日期
                     let maxDate = Calendar.current.startOfDay(for: Date())
-                    let invalidDates = newDates.filter { $0 < minDate || $0 > maxDate }
+                    let invalidDates = newDates.filter { $0 > maxDate }
                     if !invalidDates.isEmpty {
-                        invalidDateMessage = "Choose dates from start date to today"
-                        showInvalidDateAlert = true
-                        return // 不更新 selectedDates
+                        // 过滤掉未来日期，只保留有效日期
+                        let validDates = newDates.filter { $0 <= maxDate }
+                        selectedDates = Array(validDates)
+                    } else {
+                        selectedDates = Array(newDates)
                     }
-                    selectedDates = Array(newDates)
                 }),
                 isBlankCalendar: true
             )
