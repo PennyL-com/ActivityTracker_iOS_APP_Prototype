@@ -1,6 +1,7 @@
 import SwiftUI
 import CoreData
 import Foundation
+import Combine
 
 /// 主仪表板视图 - 显示所有活动的列表和管理界面
 struct DashboardView: View {
@@ -11,6 +12,7 @@ struct DashboardView: View {
     @State private var sortActivities: [Activity] = [] // 排序模式下的本地活动数组
     @State private var showCalendarSheet = false
     @State private var showCategoriesSheet = false
+    @State private var refreshTrigger = UUID() // 手动刷新触发器
     let manager = ActivityDataManager.shared // 活动数据管理器单例实例
     
     // 使用 @FetchRequest 自动获取和监听 Core Data 数据
@@ -31,7 +33,13 @@ struct DashboardView: View {
                 addButtonView
             }
             .sheet(isPresented: $showAdd) {
-                AddActivityView(onSave: {}) // @FetchRequest 会自动更新，不需要手动刷新
+                AddActivityView(
+                    onSave: {
+                        // 触发手动刷新，确保UI立即更新
+                        refreshTrigger = UUID()
+                    },
+                    defaultCategory: ActivityDataManager.shared.fetchLifeCategory()
+                )
             }
             .sheet(item: $selectedActivity) { activity in
                 NavigationView {
@@ -46,9 +54,18 @@ struct DashboardView: View {
             }
             .background(Color(.systemGray6).ignoresSafeArea())
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
-                // 当应用变为活跃状态时，检查是否需要更新小组件
+                // 当应用变为活跃状态时，强制刷新Core Data上下文以同步小组件的更改
+                viewContext.refreshAllObjects()
+                // 检查是否需要更新小组件
                 checkAndUpdateWidgetForDateChange()
+                // 触发手动刷新，确保数据同步
+                refreshTrigger = UUID()
             }
+            .onReceive(NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)) { _ in
+                // 监听Core Data保存通知，确保UI及时更新
+                refreshTrigger = UUID()
+            }
+            // 移除了顶层 .id(refreshTrigger)，避免重建整个视图导致 sheet 重置
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     if isSorting {
@@ -90,6 +107,7 @@ struct DashboardView: View {
                     .onMove(perform: moveActivity)
                 }
                 .listStyle(.plain)
+                .id(refreshTrigger) // 仅刷新列表
                 .environment(\.editMode, .constant(.active))
             } else {
                 List {
@@ -100,6 +118,7 @@ struct DashboardView: View {
                     }
                 }
                 .listStyle(.plain)
+                .id(refreshTrigger) // 仅刷新列表
             }
         }
         .onAppear {
@@ -157,6 +176,8 @@ struct DashboardView: View {
                             try viewContext.save()
                             // 强制刷新小组件，确保打钩状态立即同步
                             manager.forceRefreshWidget()
+                            // 触发UI刷新
+                            refreshTrigger = UUID()
                         } catch {
                             print("保存完成记录失败: \(error)")
                         }
@@ -165,6 +186,8 @@ struct DashboardView: View {
                 },
                 onDelete: {
                     manager.deleteActivity(activity)
+                    // 触发UI刷新
+                    refreshTrigger = UUID()
                 },
                 onTapCard: {
                     selectedActivity = activity
@@ -195,12 +218,15 @@ struct DashboardView: View {
             try viewContext.save()
             // 强制刷新小组件，确保排序变化立即同步
             manager.forceRefreshWidget()
+            // 触发UI刷新
+            refreshTrigger = UUID()
             isSorting = false
         } catch {
             print("保存排序失败: \(error)")
         }
     }
 
+    // 恢复缺失的新增按钮视图
     private var addButtonView: some View {
         Group {
             if !isSorting {

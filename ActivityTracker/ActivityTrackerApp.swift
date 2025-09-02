@@ -7,20 +7,20 @@ import WidgetKit
 @main
 struct ActivityTrackerApp: App {
     @StateObject private var urlHandler = URLHandler()
-    
-    init() {
-        // 初始化小组件数据管理器
-        setupWidgetDataManager()
-        // 检查日期变化并更新小组件
-        checkDateChangeAndUpdateWidget()
-    }
+    let persistenceController = PersistenceController.shared
     
     var body: some Scene {
         WindowGroup {
             DashboardView()
-                .environment(\.managedObjectContext, PersistenceController.shared.container.viewContext)
+                .environment(\.managedObjectContext, persistenceController.container.viewContext)
                 .onOpenURL { url in
                     urlHandler.handleURL(url)
+                }
+                .onAppear {
+                    // 在视图出现后初始化
+                    setupWidgetDataManager()
+                    checkDateChangeAndUpdateWidget()
+                    ensureDefaultCategories()
                 }
         }
     }
@@ -30,7 +30,6 @@ struct ActivityTrackerApp: App {
         // 验证数据完整性
         #if canImport(WidgetKit)
         // 这里可以添加小组件相关的初始化逻辑
-        print("Widget data manager setup completed")
         #endif
     }
     
@@ -46,6 +45,14 @@ struct ActivityTrackerApp: App {
             WidgetCenter.shared.reloadAllTimelines()
             print("Date changed, widget updated from app")
             #endif
+        }
+    }
+    
+    /// 确保默认分类存在
+    private func ensureDefaultCategories() {
+        // 在后台队列中执行，避免阻塞主线程
+        DispatchQueue.global(qos: .background).async {
+            ActivityDataManager.shared.ensureDefaultCategories()
         }
     }
 }

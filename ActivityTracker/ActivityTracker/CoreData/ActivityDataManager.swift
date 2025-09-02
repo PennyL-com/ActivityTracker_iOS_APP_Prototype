@@ -62,10 +62,6 @@ class ActivityDataManager {
         request.sortDescriptors = [NSSortDescriptor(key: "sortOrder", ascending: false)]
         do {
             let results = try context.fetch(request)
-            print("ActivityDataManager fetched \(results.count) activities")
-            for (index, activity) in results.enumerated() {
-                print("  \(index): \(activity.name ?? "unnamed") - sortOrder: \(activity.sortOrder)")
-            }
             return results
         } catch {
             print("Fetch Activities Error: \(error)")
@@ -239,5 +235,45 @@ class ActivityDataManager {
         WidgetCenter.shared.reloadAllTimelines()
         print("Widget timeline force refreshed")
         #endif
+    }
+    
+    /// 确保默认分类存在（Life、Study、Work）
+    /// 如果这些分类不存在，则创建它们
+    func ensureDefaultCategories() {
+        let defaultCategoryNames = ["Life", "Study", "Work"]
+        
+        for categoryName in defaultCategoryNames {
+            // 检查分类是否已存在
+            let request: NSFetchRequest<Category> = Category.fetchRequest()
+            request.predicate = NSPredicate(format: "name == %@", categoryName)
+            request.fetchLimit = 1
+            
+            do {
+                let results = try context.fetch(request)
+                if results.isEmpty {
+                    // 分类不存在，创建它
+                    _ = createCategory(name: categoryName, defaultKey: categoryName.lowercased())
+                    print("Created default category: \(categoryName)")
+                }
+            } catch {
+                print("Error checking for default category \(categoryName): \(error)")
+            }
+        }
+    }
+    
+    /// 获取默认的Life分类
+    /// - Returns: Life分类，如果不存在则返回nil
+    func fetchLifeCategory() -> Category? {
+        let request: NSFetchRequest<Category> = Category.fetchRequest()
+        request.predicate = NSPredicate(format: "name == %@", "Life")
+        request.fetchLimit = 1
+        
+        do {
+            let results = try context.fetch(request)
+            return results.first
+        } catch {
+            print("Error fetching Life category: \(error)")
+            return nil
+        }
     }
 } 

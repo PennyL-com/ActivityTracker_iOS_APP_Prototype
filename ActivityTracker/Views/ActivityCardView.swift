@@ -12,9 +12,11 @@ struct ActivityCardView: View {
     let showSort: Bool // 新增：是否显示排序按钮
 
     @Environment(\.managedObjectContext) var context // 获取 Core Data 上下文
+    @State private var refreshTrigger = UUID() // 用于强制UI刷新
     
     // 新增：判断今天是否已完成
     var isCompletedToday: Bool {
+        let _ = refreshTrigger // 依赖刷新触发器
         let completions = (activity.completions as? Set<Completion>) ?? []
         return completions.contains { completion in
             if let date = completion.completedDate {
@@ -51,6 +53,7 @@ struct ActivityCardView: View {
             // 完成按钮
             Button(action: {
                 onComplete()
+                refreshTrigger = UUID() // 立即刷新UI
             }) {
                 // 按钮的显示内容
                 ZStack {

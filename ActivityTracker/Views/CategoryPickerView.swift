@@ -53,10 +53,10 @@ struct CategoryPickerView: View {
                 )
             }
             .onAppear {
-                // ActivityDataManager.shared.ensureDefaultCategories()
+                ActivityDataManager.shared.ensureDefaultCategories()
                 if selection == nil {
-                    // 默认选中 "Uncategorized"
-                    selection = categories.first(where: { $0.name == "Uncategorized" })
+                    // 默认选中 "Life" 分类
+                    selection = categories.first(where: { $0.name == "Life" })
                 }
             }
         }

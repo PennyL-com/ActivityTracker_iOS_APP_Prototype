@@ -14,6 +14,22 @@ struct PersistenceController {
         let result = PersistenceController(inMemory: true)
         let viewContext = result.container.viewContext
         
+        // 创建默认分类
+        let lifeCategory = Category(context: viewContext)
+        lifeCategory.categoryId = UUID()
+        lifeCategory.name = "Life"
+        lifeCategory.defaultKey = "life"
+        
+        let studyCategory = Category(context: viewContext)
+        studyCategory.categoryId = UUID()
+        studyCategory.name = "Study"
+        studyCategory.defaultKey = "study"
+        
+        let workCategory = Category(context: viewContext)
+        workCategory.categoryId = UUID()
+        workCategory.name = "Work"
+        workCategory.defaultKey = "work"
+        
         // 创建示例数据用于 SwiftUI 预览
         for _ in 0..<10 {
             let category = Category(context: viewContext)
@@ -54,10 +70,19 @@ struct PersistenceController {
             if let groupURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID) {
                 let storeURL = groupURL.appendingPathComponent("ActivityTracker.sqlite")
                 container.persistentStoreDescriptions.first!.url = storeURL
-                print("Using App Group storage: \(storeURL)")
             } else {
                 print("App Group not available, using default storage")
             }
+        }
+        
+        // 配置持久化存储描述符，确保配置一致
+        for storeDescription in container.persistentStoreDescriptions {
+            // 启用历史跟踪以匹配之前的配置
+            storeDescription.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
+            storeDescription.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+            // 设置轻量级迁移选项
+            storeDescription.setOption(true as NSNumber, forKey: NSMigratePersistentStoresAutomaticallyOption)
+            storeDescription.setOption(true as NSNumber, forKey: NSInferMappingModelAutomaticallyOption)
         }
 
         // 加载持久化存储
@@ -67,9 +92,6 @@ struct PersistenceController {
                 fatalError("Unresolved error \(error), \(error.userInfo)")
             }
         })
-        
-        // 打印存储 URL 用于调试
-        print("Core Data store URL: \(container.persistentStoreDescriptions.first?.url?.absoluteString ?? "nil")")
         
         // 启用自动合并来自父上下文的更改
         container.viewContext.automaticallyMergesChangesFromParent = true

@@ -49,13 +49,18 @@ class WidgetDataManager {
         }
         
         let description = NSPersistentStoreDescription(url: storeURL)
+        
+        // 配置持久化存储描述符，确保与主应用配置一致
+        description.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
+        description.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+        description.setOption(true as NSNumber, forKey: NSMigratePersistentStoresAutomaticallyOption)
+        description.setOption(true as NSNumber, forKey: NSInferMappingModelAutomaticallyOption)
+        
         container.persistentStoreDescriptions = [description]
         
         container.loadPersistentStores { desc, error in
             if let error = error {
                 print("[WidgetDataManager] Core Data load error: \(error)")
-            } else {
-                print("[WidgetDataManager] Core Data loaded successfully: \(desc)")
             }
         }
     }
