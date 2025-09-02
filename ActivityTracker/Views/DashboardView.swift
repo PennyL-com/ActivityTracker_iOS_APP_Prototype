@@ -1,21 +1,28 @@
 import SwiftUI
 import CoreData
 import Foundation
+import Combine
 
 /// 主仪表板视图 - 显示所有活动的列表和管理界面
 struct DashboardView: View {
     // MARK: - 状态变量
     @State private var showAdd = false // 控制是否显示添加活动的弹出视图
-    @State private var showEdit: Activity? // 当前要编辑的活动，nil表示不显示编辑界面
     @State private var selectedActivity: Activity? = nil // 当前选中的活动（用于查看详情）
+    @State private var isSorting = false // 是否处于排序模式
+    @State private var sortActivities: [Activity] = [] // 排序模式下的本地活动数组
+    @State private var showCalendarSheet = false
+    @State private var showCategoriesSheet = false
+    @State private var refreshTrigger = UUID() // 手动刷新触发器
     let manager = ActivityDataManager.shared // 活动数据管理器单例实例
-    @State private var activities: [Activity] = [] // 当前显示的活动列表
-
-    /// 重新加载活动数据
-    /// 从 Core Data 中获取最新的活动列表并更新 UI
-    private func reload() {
-        activities = manager.fetchActivities() // 从数据管理器获取所有活动
-    }
+    
+    // 使用 @FetchRequest 自动获取和监听 Core Data 数据
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \Activity.sortOrder, ascending: false)],
+        animation: .default
+    ) private var activities: FetchedResults<Activity>
+    
+    // 获取 Core Data 上下文
+    @Environment(\.managedObjectContext) private var viewContext
 
     var body: some View {
         NavigationView {
@@ -25,108 +32,232 @@ struct DashboardView: View {
                 Spacer()
                 addButtonView
             }
-            .sheet(isPresented: $showAdd, onDismiss: reload) {
-                AddActivityView(onSave: reload)
-            }
-            .sheet(item: $showEdit, onDismiss: reload) { activity in
-                EditActivityView(activity: activity, onSave: reload)
+            .sheet(isPresented: $showAdd) {
+                AddActivityView(
+                    onSave: {
+                        // 触发手动刷新，确保UI立即更新
+                        refreshTrigger = UUID()
+                    },
+                    defaultCategory: ActivityDataManager.shared.fetchLifeCategory()
+                )
             }
             .sheet(item: $selectedActivity) { activity in
-                ActivityDetailView(activity: activity)
+                NavigationView {
+                    ActivityDetailView(activity: activity)
+                }
             }
-            .onAppear(perform: reload)
+            .sheet(isPresented: $showCalendarSheet) {
+                CalendarView()
+            }
+            .sheet(isPresented: $showCategoriesSheet) {
+                CategoriesDashboardView()
+            }
             .background(Color(.systemGray6).ignoresSafeArea())
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+                // 当应用变为活跃状态时，强制刷新Core Data上下文以同步小组件的更改
+                viewContext.refreshAllObjects()
+                // 检查是否需要更新小组件
+                checkAndUpdateWidgetForDateChange()
+                // 触发手动刷新，确保数据同步
+                refreshTrigger = UUID()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)) { _ in
+                // 监听Core Data保存通知，确保UI及时更新
+                refreshTrigger = UUID()
+            }
+            // 移除了顶层 .id(refreshTrigger)，避免重建整个视图导致 sheet 重置
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    if isSorting {
+                        Button("Save") {
+                            saveSortOrder()
+                        }
+                        .font(.title3) // 字号更大
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: { showCategoriesSheet = true }) {
+                        Image(systemName: "calendar")
+                            .font(.title2)
+                    }
+                    .disabled(isSorting) // 排序模式下禁用
+                }
+            }
         }
     }
 
     private var headerView: some View {
-        Text("Okie dokie, let's start it!")
-            .font(.title2)
-            .fontWeight(.bold)
-            .padding(.top, 16)
+        VStack(spacing: 8) {
+            Text("Okie dokie, let's start it!")
+                .font(.title2)
+                .fontWeight(.bold)
+                .padding(.top, 16)
+        }
     }
 
     private var activityListView: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                ForEach(activities, id: \.id) { activity in
-                    activityCardView(for: activity)
+        Group {
+            if isSorting {
+                List {
+                    ForEach(sortActivities, id: \.id) { activity in
+                        activityCardView(for: activity, showSort: false)
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                    }
+                    .onMove(perform: moveActivity)
                 }
+                .listStyle(.plain)
+                .id(refreshTrigger) // 仅刷新列表
+                .environment(\.editMode, .constant(.active))
+            } else {
+                List {
+                    ForEach(activities) { activity in
+                        activityCardView(for: activity, showSort: true)
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                    }
+                }
+                .listStyle(.plain)
+                .id(refreshTrigger) // 仅刷新列表
             }
-            .padding(.horizontal)
+        }
+        .onAppear {
+            if isSorting {
+                sortActivities = activities.map { $0 }
+            }
         }
     }
 
     @ViewBuilder
-    private func activityCardView(for activity: Activity) -> some View {
-        // 这里填原来 ForEach 里的内容
-        // 获取活动的完成记录集合 TODO：什么叫completion？干嘛用的为啥一个activity有好几个completions
-        let completions = (activity.completions as? Set<Completion>) ?? []
-        // 检查今天是否已完成该活动
-        let isCompletedToday = completions.contains { completion in
-            if let date = completion.completedDate {
-                let isToday = Calendar.current.isDateInToday(date)
-                // 添加调试信息，帮助排查问题
-                print("Activity: \(activity.name ?? ""), completion date: \(date), isToday: \(isToday)")
-                return isToday
+    private func activityCardView(for activity: Activity, showSort: Bool) -> some View {
+        if isSorting {
+            // 排序模式下只显示icon和name，极简渲染，不显示任何按钮
+            HStack(alignment: .center, spacing: 16) {
+                ZStack {
+                    Circle()
+                        .fill(Color(.systemGray5))
+                        .frame(width: 48, height: 48)
+                    if let icon = activity.iconName, icon.isSingleEmoji {
+                        Text(icon)
+                            .font(.system(size: 28))
+                    } else {
+                        Image(systemName: activity.iconName ?? "circle")
+                            .font(.system(size: 28))
+                    }
+                }
+                Text(activity.name ?? "")
+                    .font(.headline)
+                Spacer()
             }
-            return false
-        }
-        ActivityCardView(
-            activity: activity,
-            isCompletedToday: isCompletedToday,
-            onComplete: {
-                _ = manager.addCompletion(to: activity, source: "app")
-                reload()
-            },
-            onEdit: {
-                showEdit = activity
-            },
-            onDelete: {
-                manager.deleteActivity(activity)
-                reload()
-            },
-            onTapCard: {
-                selectedActivity = activity
-            },
-            onTapCheck: {
-                activity.isCompleted = true 
-                reload()
-            }
-        )
-        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-            Button(role: .destructive) {
-                manager.deleteActivity(activity)
-                reload()
-            } label: {
-                Label("Delete", systemImage: "trash")
-            }
-        }
-    }
-
-    private var addButtonView: some View {
-        Button(action: { showAdd = true }) {
-            HStack {
-                Image(systemName: "plus")
-                Text(LocalizedStringKey("Add Activity"))
-            }
-            .frame(maxWidth: .infinity)
             .padding()
-            .background(Color.accentColor)
-            .foregroundColor(.white)
-            .cornerRadius(16)
+            .background(Color.white)
+            .cornerRadius(18)
+            .shadow(color: Color(.black).opacity(0.04), radius: 6, x: 0, y: 2)
+        } else {
+            // 普通模式下完整卡片
+            let completions = (activity.completions as? Set<Completion>) ?? []
+            let isCompletedToday = completions.contains { completion in
+                if let date = completion.completedDate {
+                    let isToday = Calendar.current.isDateInToday(date)
+                    return isToday
+                }
+                return false
+            }
+            ActivityCardView(
+                activity: activity,
+                onComplete: {
+                    if !isCompletedToday {
+                        let newCompletion = Completion(context: viewContext)
+                        newCompletion.id = UUID()
+                        newCompletion.completedDate = Date()
+                        newCompletion.source = "app"
+                        newCompletion.activity = activity
+                        do {
+                            try viewContext.save()
+                            // 强制刷新小组件，确保打钩状态立即同步
+                            manager.forceRefreshWidget()
+                            // 触发UI刷新
+                            refreshTrigger = UUID()
+                        } catch {
+                            print("保存完成记录失败: \(error)")
+                        }
+                        manager.save()
+                    }
+                },
+                onDelete: {
+                    manager.deleteActivity(activity)
+                    // 触发UI刷新
+                    refreshTrigger = UUID()
+                },
+                onTapCard: {
+                    selectedActivity = activity
+                },
+                onSort: {
+                    if !isSorting {
+                        sortActivities = activities.map { $0 }
+                        isSorting = true
+                    }
+                },
+                showSort: showSort
+            )
         }
-        .padding([.horizontal, .bottom])
     }
 
-    /// 计算活动自上次完成以来经过的天数
-    /// - Parameter activity: 要计算的活动
-    /// - Returns: 天数，如果没有完成记录则返回 -1
-    //TODO：这个方法在ActivityCardView中也有，应该抽取一个函数
-    func daysSinceLastCompletion(activity: Activity) -> Int {
-        let completions = manager.fetchCompletions(for: activity) // 获取活动的完成记录
-        guard let last = completions.first?.completedDate else { return -1 } // 如果没有完成记录返回 -1
-        return Calendar.current.dateComponents([.day], from: last, to: Date()).day ?? -1 // 计算天数差
+    private func moveActivity(from source: IndexSet, to destination: Int) {
+        sortActivities.move(fromOffsets: source, toOffset: destination)
+    }
+
+    private func saveSortOrder() {
+        // 修复排序逻辑：由于使用降序排列，需要反转索引值
+        // 这样第一个项目会得到最大的sortOrder值，在降序排列中会显示在最前面
+        for (index, activity) in sortActivities.enumerated() {
+            let sortOrder = Int64(sortActivities.count - 1 - index)
+            activity.setValue(sortOrder, forKey: "sortOrder")
+        }
+        do {
+            try viewContext.save()
+            // 强制刷新小组件，确保排序变化立即同步
+            manager.forceRefreshWidget()
+            // 触发UI刷新
+            refreshTrigger = UUID()
+            isSorting = false
+        } catch {
+            print("保存排序失败: \(error)")
+        }
+    }
+
+    // 恢复缺失的新增按钮视图
+    private var addButtonView: some View {
+        Group {
+            if !isSorting {
+                Button(action: { showAdd = true }) {
+                    HStack {
+                        Image(systemName: "plus")
+                        Text(LocalizedStringKey("Add Activity"))
+                    }
+                    .font(.title3)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.accentColor)
+                    .foregroundColor(.white)
+                    .cornerRadius(16)
+                }
+                .padding([.horizontal, .bottom])
+            }
+        }
+    }
+    
+    /// 检查日期变化并更新小组件
+    private func checkAndUpdateWidgetForDateChange() {
+        let defaults = UserDefaults(suiteName: "group.com.penny.activitytracker")
+        let lastUpdateDate = defaults?.object(forKey: "app_last_update_date") as? Date ?? Date.distantPast
+        
+        if !Calendar.current.isDateInToday(lastUpdateDate) {
+            // 日期已变化，更新小组件
+            defaults?.set(Date(), forKey: "app_last_update_date")
+            manager.forceRefreshWidget()
+            print("Date changed, widget updated from dashboard")
+        }
     }
 }
 

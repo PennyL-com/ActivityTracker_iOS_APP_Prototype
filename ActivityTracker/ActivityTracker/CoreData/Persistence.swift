@@ -14,13 +14,31 @@ struct PersistenceController {
         let result = PersistenceController(inMemory: true)
         let viewContext = result.container.viewContext
         
+        // 创建默认分类
+        let lifeCategory = Category(context: viewContext)
+        lifeCategory.categoryId = UUID()
+        lifeCategory.name = "Life"
+        lifeCategory.defaultKey = "life"
+        
+        let studyCategory = Category(context: viewContext)
+        studyCategory.categoryId = UUID()
+        studyCategory.name = "Study"
+        studyCategory.defaultKey = "study"
+        
+        let workCategory = Category(context: viewContext)
+        workCategory.categoryId = UUID()
+        workCategory.name = "Work"
+        workCategory.defaultKey = "work"
+        
         // 创建示例数据用于 SwiftUI 预览
         for _ in 0..<10 {
-            // 创建预览用的活动数据
+            let category = Category(context: viewContext)
+            category.categoryId = UUID()
+            category.name = "Preview Category"
             let activity = Activity(context: viewContext)
             activity.id = UUID()
             activity.name = "Preview Activity"
-            activity.category = "Preview"
+            activity.belongToCategory = category
             activity.createdDate = Date()
         }
         
@@ -43,21 +61,28 @@ struct PersistenceController {
         // 创建 Core Data 容器，指定数据模型名称
         container = NSPersistentContainer(name: "ActivityTracker")
         
-        // App Group 标识符，用于在应用和小组件之间共享数据
-        let groupID = "group.com.penny.activitytracker"
-        let storeName = "ActivityTracker.sqlite"
-        
         if inMemory {
             // 内存存储模式：将存储 URL 设置为 /dev/null
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
-        } else if let groupURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID) {
-            // 使用 App Group 共享目录存储数据库文件
-            let storeURL = groupURL.appendingPathComponent(storeName)
-            let description = NSPersistentStoreDescription(url: storeURL)
-            container.persistentStoreDescriptions = [description]
         } else {
-            // 如果无法获取 App Group 目录，抛出致命错误
-            fatalError("无法获取 App Group 目录，请检查 App Group 配置")
+            // 使用 App Group 共享存储位置
+            let groupID = "group.com.penny.activitytracker"
+            if let groupURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID) {
+                let storeURL = groupURL.appendingPathComponent("ActivityTracker.sqlite")
+                container.persistentStoreDescriptions.first!.url = storeURL
+            } else {
+                print("App Group not available, using default storage")
+            }
+        }
+        
+        // 配置持久化存储描述符，确保配置一致
+        for storeDescription in container.persistentStoreDescriptions {
+            // 启用历史跟踪以匹配之前的配置
+            storeDescription.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
+            storeDescription.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+            // 设置轻量级迁移选项
+            storeDescription.setOption(true as NSNumber, forKey: NSMigratePersistentStoresAutomaticallyOption)
+            storeDescription.setOption(true as NSNumber, forKey: NSInferMappingModelAutomaticallyOption)
         }
 
         // 加载持久化存储
@@ -67,9 +92,6 @@ struct PersistenceController {
                 fatalError("Unresolved error \(error), \(error.userInfo)")
             }
         })
-        
-        // 打印存储 URL 用于调试
-        print("Core Data store URL: \(container.persistentStoreDescriptions.first?.url?.absoluteString ?? "nil")")
         
         // 启用自动合并来自父上下文的更改
         container.viewContext.automaticallyMergesChangesFromParent = true
